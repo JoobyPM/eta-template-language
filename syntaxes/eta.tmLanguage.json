@@ -198,13 +198,13 @@
       "begin": "\\{",
       "beginCaptures": {
         "0": {
-          "name": "punctuation.section.embedded.begin.eta"
+          "name": "punctuation.section.embedded.eta"
         }
       },
       "end": "(\\})|(?=(\\s*)(-|_)?(%>))",
       "endCaptures": {
         "1": {
-          "name": "punctuation.section.embedded.end.eta"
+          "name": "punctuation.section.embedded.eta"
         }
       },
       "patterns": [
@@ -215,7 +215,7 @@
     },
     "eta-js-curly-close": {
       "match": "\\}",
-      "name": "punctuation.section.embedded.end.eta"
+      "name": "punctuation.section.embedded.eta"
     },
     "eta-js-paren-group": {
       "name": "meta.group.parens.eta.js",
@@ -290,7 +290,7 @@
       "begin": "(<%)(-|_)?(\\s*)(=)",
       "beginCaptures": {
         "1": {
-          "name": "punctuation.section.embedded.begin.eta"
+          "name": "punctuation.section.embedded.eta"
         },
         "2": {
           "name": "keyword.operator.whitespace-control.eta"
@@ -305,7 +305,7 @@
           "name": "keyword.operator.whitespace-control.eta"
         },
         "3": {
-          "name": "punctuation.section.embedded.end.eta"
+          "name": "punctuation.section.embedded.eta"
         }
       },
       "patterns": [
@@ -319,7 +319,7 @@
       "begin": "(<%)(-|_)?(\\s*)(~)",
       "beginCaptures": {
         "1": {
-          "name": "punctuation.section.embedded.begin.eta"
+          "name": "punctuation.section.embedded.eta"
         },
         "2": {
           "name": "keyword.operator.whitespace-control.eta"
@@ -334,7 +334,7 @@
           "name": "keyword.operator.whitespace-control.eta"
         },
         "3": {
-          "name": "punctuation.section.embedded.end.eta"
+          "name": "punctuation.section.embedded.eta"
         }
       },
       "patterns": [
@@ -348,7 +348,7 @@
       "begin": "(<%)(-|_)?(\\s*)(#)",
       "beginCaptures": {
         "1": {
-          "name": "punctuation.section.embedded.begin.eta"
+          "name": "punctuation.section.embedded.eta"
         },
         "2": {
           "name": "keyword.operator.whitespace-control.eta"
@@ -363,7 +363,7 @@
           "name": "keyword.operator.whitespace-control.eta"
         },
         "3": {
-          "name": "punctuation.section.embedded.end.eta"
+          "name": "punctuation.section.embedded.eta"
         }
       },
       "contentName": "comment.block.eta"
@@ -373,7 +373,7 @@
       "begin": "(<%)(-|_)?(?!\\s*[=~#])",
       "beginCaptures": {
         "1": {
-          "name": "punctuation.section.embedded.begin.eta"
+          "name": "punctuation.section.embedded.eta"
         },
         "2": {
           "name": "keyword.operator.whitespace-control.eta"
@@ -385,7 +385,7 @@
           "name": "keyword.operator.whitespace-control.eta"
         },
         "3": {
-          "name": "punctuation.section.embedded.end.eta"
+          "name": "punctuation.section.embedded.eta"
         }
       },
       "patterns": [

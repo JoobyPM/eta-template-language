@@ -7,6 +7,16 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-04-18
+
+### Changed
+
+- Unified Eta delimiter TextMate scopes across opening tags, closing tags, and inline JavaScript braces so Cursor and VS Code themes render embedded Eta punctuation consistently.
+
+### Added
+
+- Added carried-state grammar regressions that cover nested Eta control blocks and mixed HTML attribute expressions modeled after the EMS templates.
+
 ## [0.2.4] - 2026-04-18
 
 ### Added

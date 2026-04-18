@@ -15,6 +15,7 @@ GRAMMAR_FILES = [
     Path("syntaxes/eta.tmLanguage.json"),
     Path("syntaxes/eta.injection.tmLanguage.json"),
 ]
+ETA_DELIMITER_SCOPE = "punctuation.section.embedded.eta"
 
 VALID_CASES = {
     "escaped": [
@@ -88,10 +89,10 @@ def test_syntax_patterns_match_the_generator_contract() -> None:
 
     assert curly_repo["begin"] == r"\{", "curly begin mismatch in shared Eta repository"
     assert curly_repo["end"] == r"(\})|(?=(\s*)(-|_)?(%>))", "curly end mismatch in shared Eta repository"
-    assert curly_repo["beginCaptures"]["0"]["name"] == "punctuation.section.embedded.begin.eta", (
+    assert curly_repo["beginCaptures"]["0"]["name"] == ETA_DELIMITER_SCOPE, (
         "curly begin scope mismatch in shared Eta repository"
     )
-    assert curly_repo["endCaptures"]["1"]["name"] == "punctuation.section.embedded.end.eta", (
+    assert curly_repo["endCaptures"]["1"]["name"] == ETA_DELIMITER_SCOPE, (
         "curly end scope mismatch in shared Eta repository"
     )
 
