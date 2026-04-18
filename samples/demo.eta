@@ -1,0 +1,12 @@
+<% layout("./layouts/base") %>
+
+<h1><%= it.title %></h1>
+
+<% if (it.user) { %>
+  <p>Hello, <%= it.user.name %>!</p>
+<% } else { %>
+  <p>Please sign in.</p>
+<% } %>
+
+<div><%~ it.rawHtml %></div>
+<%~ include("./partials/footer") %>

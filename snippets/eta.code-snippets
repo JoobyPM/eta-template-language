@@ -1,0 +1,49 @@
+{
+  "Eta output": {
+    "prefix": "etaout",
+    "body": ["<%= ${1:it.value} %>"],
+    "description": "Escaped output expression"
+  },
+  "Eta raw output": {
+    "prefix": "etaraw",
+    "body": ["<%~ ${1:it.html} %>"],
+    "description": "Raw output expression"
+  },
+  "Eta if block": {
+    "prefix": "etaif",
+    "body": [
+      "<% if (${1:condition}) { %>",
+      "  ${2}",
+      "<% } %>"
+    ],
+    "description": "If block"
+  },
+  "Eta else block": {
+    "prefix": "etaelse",
+    "body": [
+      "<% } else { %>",
+      "  ${1}",
+      "<% } %>"
+    ],
+    "description": "Else block"
+  },
+  "Eta for loop": {
+    "prefix": "etafor",
+    "body": [
+      "<% for (const ${1:item} of ${2:items}) { %>",
+      "  ${3}",
+      "<% } %>"
+    ],
+    "description": "for...of loop"
+  },
+  "Eta include": {
+    "prefix": "etainclude",
+    "body": ["<%~ include(\"${1:./partial}\") %>"],
+    "description": "Include a partial"
+  },
+  "Eta layout": {
+    "prefix": "etalayout",
+    "body": ["<% layout(\"${1:./layout}\") %>"],
+    "description": "Set a layout"
+  }
+}

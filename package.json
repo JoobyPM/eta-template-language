@@ -1,0 +1,68 @@
+{
+  "name": "eta-template-language",
+  "displayName": "Eta Template Language",
+  "description": "Language support for Eta templates in Cursor and VS Code compatible editors.",
+  "version": "0.1.0",
+  "publisher": "local-dev",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "eta",
+    "template",
+    "html",
+    "javascript"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "eta",
+        "aliases": ["Eta", "eta"],
+        "extensions": [".eta"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "eta",
+        "scopeName": "text.html.eta",
+        "path": "./syntaxes/eta.tmLanguage.json",
+        "embeddedLanguages": {
+          "source.js.embedded.eta": "javascript"
+        }
+      },
+      {
+        "scopeName": "text.html.eta.injection",
+        "path": "./syntaxes/eta.injection.tmLanguage.json",
+        "injectTo": [
+          "text.html.basic"
+        ],
+        "embeddedLanguages": {
+          "source.js.embedded.eta": "javascript"
+        }
+      }
+    ],
+    "snippets": [
+      {
+        "language": "eta",
+        "path": "./snippets/eta.code-snippets"
+      }
+    ],
+    "configurationDefaults": {
+      "emmet.includeLanguages": {
+        "eta": "html"
+      }
+    }
+  },
+  "scripts": {
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.6.2"
+  }
+}
