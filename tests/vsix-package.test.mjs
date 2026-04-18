@@ -9,9 +9,8 @@ import { assertBundledExtensionFormats } from "./extension-runtime-smoke.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-async function readPackageVersion() {
-  const packageJson = JSON.parse(await fs.readFile(path.join(ROOT, "package.json"), "utf8"));
-  return packageJson.version;
+async function readPackageManifest() {
+  return JSON.parse(await fs.readFile(path.join(ROOT, "package.json"), "utf8"));
 }
 
 function ensureUnzipAvailable(t) {
@@ -31,8 +30,8 @@ test("packaged VSIX contains the bundled extension runtime", async (t) => {
     return;
   }
 
-  const version = await readPackageVersion();
-  const vsixPath = path.join(ROOT, `eta-template-language-${version}.vsix`);
+  const manifest = await readPackageManifest();
+  const vsixPath = path.join(ROOT, `eta-template-language-${manifest.version}.vsix`);
   const entries = execFileSync("unzip", ["-Z1", vsixPath], { encoding: "utf8" })
     .split("\n")
     .filter(Boolean);
@@ -58,6 +57,8 @@ test("packaged VSIX contains the bundled extension runtime", async (t) => {
     })
   );
   assert.equal(packagedManifest.workspaces, undefined, "VSIX manifest should not expose workspace metadata");
+  assert.equal(packagedManifest.publisher, manifest.publisher, "VSIX manifest should preserve the real publisher id");
+  assert.notEqual(packagedManifest.publisher, "local-dev", "VSIX manifest should not ship a placeholder publisher");
 
   const bundle = execFileSync("unzip", ["-p", vsixPath, "extension/dist/extension.js"], {
     encoding: "utf8",
@@ -75,9 +76,9 @@ test("packaged VSIX bundle can load and format an Eta document", async (t) => {
     return;
   }
 
-  const version = await readPackageVersion();
-  const vsixPath = path.join(ROOT, `eta-template-language-${version}.vsix`);
-  const tempBundlePath = path.join(ROOT, "dist", `vsix-extension-${version}.js`);
+  const manifest = await readPackageManifest();
+  const vsixPath = path.join(ROOT, `eta-template-language-${manifest.version}.vsix`);
+  const tempBundlePath = path.join(ROOT, "dist", `vsix-extension-${manifest.version}.js`);
 
   try {
     await fs.writeFile(

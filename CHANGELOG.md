@@ -10,11 +10,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ### Added
 
 - Added staged VSIX packaging that emits a stripped extension manifest and verifies the packaged manifest does not expose workspace metadata.
+- Added an Open VSX extension publish workflow that tags releases as `eta-template-language-v<version>` and attaches the packaged VSIX to the matching GitHub release.
 
 ### Changed
 
 - Marked Eta formatter settings as resource-scoped so folder and file overrides work correctly in multi-root workspaces.
 - Documented Prettier-upgrade sensitivity for exact-output formatter tests and the staged extension packaging flow.
+- Switched the extension publisher id from the local placeholder value to the real `JoobyPM` namespace used for Open VSX publication.
 
 ### Fixed
 
@@ -23,6 +25,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Stopped conflating missing slot replacements with empty-string replacements in HTML/Markdown placeholder stitching.
 - Cleaned up temporary directories created by extension runtime smoke tests.
 - Hardened grammar contract tests so both generated repositories are checked for structural equality before shared assertions run.
+- Hardened VSIX smoke checks so the packaged manifest must preserve the real publisher id and reject the placeholder publisher.
 
 ## [0.2.3] - 2026-04-18
 

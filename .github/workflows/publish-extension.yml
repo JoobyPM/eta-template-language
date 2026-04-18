@@ -1,0 +1,66 @@
+name: Publish Extension
+
+on:
+  push:
+    tags:
+      - "eta-template-language-v*"
+
+jobs:
+  publish:
+    name: Publish VSIX to Open VSX
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify extension metadata and tag
+        id: meta
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_PUBLISHER=$(node -p "require('./package.json').publisher")
+          TAG_VERSION="${GITHUB_REF_NAME#eta-template-language-v}"
+
+          if [ "$PACKAGE_PUBLISHER" = "local-dev" ]; then
+            echo "Refusing to publish extension with placeholder publisher 'local-dev'."
+            exit 1
+          fi
+
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+            echo "Tag version $TAG_VERSION does not match eta-template-language version $PACKAGE_VERSION"
+            exit 1
+          fi
+
+          echo "version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "publisher=$PACKAGE_PUBLISHER" >> "$GITHUB_OUTPUT"
+
+      - name: Build, test, and package extension
+        run: npm run package
+
+      - name: Publish extension to Open VSX
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          if [ -z "$OVSX_PAT" ]; then
+            echo "Missing OVSX_PAT secret."
+            exit 1
+          fi
+
+          npx --no-install ovsx publish "eta-template-language-${{ steps.meta.outputs.version }}.vsix" -p "$OVSX_PAT"
+
+      - name: Create GitHub release with VSIX
+        uses: softprops/action-gh-release@v2
+        with:
+          files: eta-template-language-${{ steps.meta.outputs.version }}.vsix
+          generate_release_notes: true

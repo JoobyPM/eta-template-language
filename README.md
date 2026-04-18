@@ -72,6 +72,7 @@ snippets/
 
 - `.github/workflows/ci.yml` runs the dedicated `prettier-plugin-eta` build/test job and then validates the bundled extension runtime, syntax checks, VSIX packaging, and packaged artifact contents.
 - `.github/workflows/publish-prettier-plugin.yml` publishes `packages/prettier-plugin-eta` to npm through npm trusted publishing.
+- `.github/workflows/publish-extension.yml` publishes the packaged VSIX to Open VSX and attaches the same VSIX to the GitHub release for manual installation fallback.
 - The repository now keeps the extension package and `prettier-plugin-eta` in lockstep version numbers. Update both package manifests together and record user-visible changes in `CHANGELOG.md`.
 
 To publish the Prettier plugin:
@@ -85,6 +86,26 @@ To publish the Prettier plugin:
 4. Let GitHub Actions publish from that tag; no `NPM_TOKEN` secret is required for publishing.
 
 The publish workflow verifies that the tag version matches the package version before it runs `npm publish`. If the package later needs private npm dependencies during CI, add a separate read-only install token rather than a publish token.
+
+To publish the extension for Cursor through Open VSX:
+
+1. Do the one-time Open VSX setup:
+   - create an Eclipse account and sign the Open VSX Publisher Agreement
+   - create an Open VSX access token
+   - create the namespace that matches the extension `publisher` field:
+
+     ```bash
+     npx ovsx create-namespace JoobyPM -p <your-open-vsx-token>
+     ```
+
+   - add the token to GitHub at `Repository -> Settings -> Secrets and variables -> Actions -> New repository secret`
+   - use `OVSX_PAT` as the secret name
+2. Update both `package.json` files and `CHANGELOG.md`.
+3. Merge to `main`.
+4. Push a git tag in the form `eta-template-language-v<version>`.
+5. Let `.github/workflows/publish-extension.yml` build, test, package, publish to Open VSX, and create a GitHub release with the `.vsix` asset.
+
+After Open VSX accepts the publish, Cursor should pick it up from the Open VSX-backed marketplace. If Cursor takes time to surface the new version, install the VSIX from the GitHub release asset manually and retry later.
 
 ## Formatter Scope
 

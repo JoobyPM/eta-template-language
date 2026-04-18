@@ -98,6 +98,39 @@ The plugin is published through npm trusted publishing.
 
 4. Let `.github/workflows/publish-prettier-plugin.yml` publish the plugin.
 
+### Publishing the extension to Open VSX
+
+The extension is published to Open VSX so it appears in Cursor's Open VSX-backed extension catalog.
+
+One-time setup:
+
+1. Create an Eclipse account.
+2. Sign the Open VSX Publisher Agreement on open-vsx.org.
+3. Generate an Open VSX access token.
+4. Create the namespace that matches the root package `publisher` field:
+
+   ```bash
+   npx ovsx create-namespace JoobyPM -p <token>
+   ```
+
+5. Add that token to GitHub Actions as the `OVSX_PAT` repository secret.
+
+Release flow:
+
+1. Update both package versions.
+2. Update `CHANGELOG.md`.
+3. Merge to `main`.
+4. Push a tag in the form:
+
+   ```bash
+   git tag eta-template-language-v<version>
+   git push origin eta-template-language-v<version>
+   ```
+
+5. Let `.github/workflows/publish-extension.yml` build, test, package, publish the VSIX to Open VSX, and attach the same VSIX to a GitHub release.
+
+If Cursor does not surface the new Open VSX version immediately, install the GitHub release VSIX manually while Cursor's marketplace sync catches up.
+
 ## Pull Requests
 
 PRs should describe:
