@@ -1,6 +1,6 @@
 {
   "name": "prettier-plugin-eta",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Prettier plugin for Eta templates.",
   "license": "MIT",
   "type": "module",
