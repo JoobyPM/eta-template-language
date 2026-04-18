@@ -172,3 +172,14 @@ test("Eta number highlighting recognizes modern JavaScript numeric literals", as
     assert.ok(findToken(tokens, literal, "constant.numeric.js"), `missing numeric token for ${literal}`);
   }
 });
+
+test("Eta injection stays balanced inside Alpine attribute expressions", async () => {
+  const registry = await createRegistry();
+  const grammar = await registry.loadGrammar("text.html.basic");
+  const line = `<span x-text="<%= it.tFn || "$t" %>('<%= it.loadingKey %>')"></span>`;
+  const tokens = tokenizeLine(grammar, line);
+
+  assert.equal(countTokens(tokens, "<%", "punctuation.section.embedded.begin.eta"), 2);
+  assert.equal(countTokens(tokens, "%>", "punctuation.section.embedded.end.eta"), 2);
+  assert.ok(findToken(tokens, "||", "keyword.operator.js"));
+});

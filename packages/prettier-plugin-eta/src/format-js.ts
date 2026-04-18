@@ -109,8 +109,12 @@ export function logFormattingFailure(context: string, error: unknown): void {
   console.warn(`[prettier-plugin-eta] ${context}: ${details}`);
 }
 
-async function formatWithParser(wrapped: string, options: EtaPluginOptions): Promise<string> {
-  return prettier.format(wrapped, buildPrettierOptions(options, { parser: "babel-ts" }));
+async function formatWithParser(
+  wrapped: string,
+  options: EtaPluginOptions,
+  overrides: Partial<prettier.Options> = {}
+): Promise<string> {
+  return prettier.format(wrapped, buildPrettierOptions(options, { parser: "babel-ts", ...overrides }));
 }
 
 async function formatOpenControlFragment(source: string, options: EtaPluginOptions): Promise<string> {
@@ -222,6 +226,36 @@ export async function formatExpressionSource(
     return dedentWrappedExpression(extracted);
   } catch (error) {
     logFormattingFailure("expression formatting failed", error);
+    return normalized;
+  }
+}
+
+export async function formatExpressionSourceInline(
+  source: string,
+  options: EtaPluginOptions
+): Promise<string> {
+  const normalized = trimBlankLines(source);
+  if (!normalized) {
+    return "";
+  }
+
+  const binding = createMarker("EXPR_INLINE_BINDING");
+  const endMarker = createCommentMarker("EXPR_INLINE_END");
+  const prefix = `const ${binding} =`;
+  const wrapped = [`${prefix} (${normalized});`, endMarker, ""].join("\n");
+
+  try {
+    const formatted = await formatWithParser(wrapped, options, { printWidth: 1_000_000 });
+    const startIndex = formatted.indexOf(prefix);
+    const endMarkerIndex = formatted.indexOf(endMarker, startIndex + prefix.length);
+    if (startIndex === -1 || endMarkerIndex <= startIndex) {
+      throw new Error("Unable to extract inline Eta expression from formatted wrapper.");
+    }
+
+    const extracted = formatted.slice(startIndex + prefix.length, endMarkerIndex).replace(/;\s*$/, "");
+    return trimOuterWhitespace(extracted).replace(/\s+/g, " ");
+  } catch (error) {
+    logFormattingFailure("inline expression formatting failed", error);
     return normalized;
   }
 }

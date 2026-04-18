@@ -7,16 +7,21 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-04-18
+
 ### Added
 
 - Added staged VSIX packaging that emits a stripped extension manifest and verifies the packaged manifest does not expose workspace metadata.
 - Added an Open VSX extension publish workflow that tags releases as `eta-template-language-v<version>` and attaches the packaged VSIX to the matching GitHub release.
+- Added formatter regressions for Markdown tables and fenced code blocks, standalone Eta control-line indentation recovery, inline raw-output includes, and Alpine attribute tokenization.
 
 ### Changed
 
 - Marked Eta formatter settings as resource-scoped so folder and file overrides work correctly in multi-root workspaces.
 - Documented Prettier-upgrade sensitivity for exact-output formatter tests and the staged extension packaging flow.
 - Switched the extension publisher id from the local placeholder value to the real `JoobyPM` namespace used for Open VSX publication.
+- Stopped reflowing Markdown tables and fenced code blocks in `.md.eta` and `.markdown.eta` files during placeholder formatting.
+- Recovered standalone Eta exec-tag indentation from surrounding HTML context so previously mangled nested control blocks reformat cleanly.
 
 ### Fixed
 
@@ -26,6 +31,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Cleaned up temporary directories created by extension runtime smoke tests.
 - Hardened grammar contract tests so both generated repositories are checked for structural equality before shared assertions run.
 - Hardened VSIX smoke checks so the packaged manifest must preserve the real publisher id and reject the placeholder publisher.
+- Fixed standalone raw output tags so simple include-style calls collapse back to a single inline Eta tag when they fit within the configured print width.
 
 ## [0.2.3] - 2026-04-18
 

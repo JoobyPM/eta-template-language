@@ -187,7 +187,7 @@ test("extracts wrapped expressions without depending on the last semicolon in th
   assert.equal(result, "<%= foo /* trailing ; */ %>\n");
 });
 
-test("formats markdown eta templates with the markdown parser", async () => {
+test("formats markdown eta templates without reflowing markdown tables", async () => {
   const source = [
     "# Configuration",
     "",
@@ -214,11 +214,132 @@ test("formats markdown eta templates with the markdown parser", async () => {
       "> Auto-generated for <%= it.service %>",
       "",
       "| Key | Value |",
-      "| --- | ----- |",
-      "",
+      "| --- | --- |",
       "<% for (const item of items) { %>",
       "| <%= item.key %> | <%= item.value %> |",
       "<% } %>",
+      ""
+    ].join("\n")
+  );
+});
+
+test("preserves markdown tables and fenced code blocks in markdown eta templates", async () => {
+  const source = [
+    "---",
+    'title: "Configuration for <%= it.meta.service %>"',
+    "---",
+    "",
+    "| Category | Variables | Description |",
+    "|----------|-----------|-------------|",
+    "<% for (const [category, vars] of Object.entries(it.categories)) { -%>",
+    "| <%= category %> | <%= vars.length %> | <%= it.categoryDescriptions[category] || 'Configuration settings' %> |",
+    "<% } -%>",
+    "",
+    "```bash",
+    "# Redis",
+    "REDIS_HOST=localhost",
+    "APP_NAME=<%= it.meta.service %>",
+    "```",
+    "",
+    "## Next",
+    "",
+    "Done.",
+    ""
+  ].join("\n");
+
+  const result = await formatEta(source, {
+    filepath: "/tmp/configuration.md.eta",
+    printWidth: 120,
+    proseWrap: "preserve"
+  });
+
+  assert.equal(
+    result,
+    [
+      "---",
+      'title: "Configuration for <%= it.meta.service %>"',
+      "---",
+      "",
+      "| Category | Variables | Description |",
+      "|----------|-----------|-------------|",
+      "<% for (const [category, vars] of Object.entries(it.categories)) { -%>",
+      "| <%= category %> | <%= vars.length %> | <%= it.categoryDescriptions[category] || \"Configuration settings\" %> |",
+      "<% } -%>",
+      "",
+      "```bash",
+      "# Redis",
+      "REDIS_HOST=localhost",
+      "APP_NAME=<%= it.meta.service %>",
+      "```",
+      "",
+      "## Next",
+      "",
+      "Done.",
+      "",
+      ""
+    ].join("\n")
+  );
+});
+
+test("preserves standalone eta control line indentation in nested html", async () => {
+  const source = [
+    '<template x-if="!<%= it.flag %>">',
+    "  <span>",
+    "    <% if (it.icon) { %>",
+    '    <i class="fa fa-<%= it.icon %>"></i>',
+    "    <% } %>",
+    "<% if (it.labelExpr) { %>",
+    '    <span x-text="<%= it.labelExpr %>"></span>',
+    "    <% } else if (it.labelKey) { %>",
+    '    <span x-text="<%= it.tFn || \"$t\" %>(\'<%= it.labelKey %>\')"></span>',
+    "    <% } %>",
+    "  </span>",
+    "</template>",
+    ""
+  ].join("\n");
+
+  const result = await formatEta(source, {
+    printWidth: 120
+  });
+
+  assert.equal(
+    result,
+    [
+      '<template x-if="!<%= it.flag %>">',
+      "  <span>",
+      "    <% if (it.icon) { %>",
+      '    <i class="fa fa-<%= it.icon %>"></i>',
+      "    <% } %>",
+      "    <% if (it.labelExpr) { %>",
+      '    <span x-text="<%= it.labelExpr %>"></span>',
+      "    <% } else if (it.labelKey) { %>",
+      '    <span x-text="<%= it.tFn || \"$t\" %>(\'<%= it.labelKey %>\')"></span>',
+      "    <% } %>",
+      "  </span>",
+      "</template>",
+      ""
+    ].join("\n")
+  );
+});
+
+test("keeps standalone raw output tags inline when the source expression was inline", async () => {
+  const source = [
+    "<table>",
+    '  <%~ include("/partials/_thead", { cols: it.tables.history.columns }) %>',
+    "</table>",
+    ""
+  ].join("\n");
+
+  const result = await formatEta(source, {
+    printWidth: 80
+  });
+
+  assert.equal(
+    result,
+    [
+      "<table>",
+      '  <%~ include("/partials/_thead", { cols: it.tables.history.columns }) %>',
+      "</table>",
       ""
     ].join("\n")
   );
