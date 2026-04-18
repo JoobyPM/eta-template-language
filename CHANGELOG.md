@@ -7,6 +7,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.8] - 2026-04-19
+
+### Changed
+
+- Unified the outer TextMate tag scope for exec, escaped-output, raw-output, and comment tags so Cursor and VS Code themes see Eta open/close delimiters under the same scope stack regardless of tag kind.
+
 ## [0.2.7] - 2026-04-19
 
 ### Changed

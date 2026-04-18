@@ -232,3 +232,17 @@ test("Eta delimiters keep a single scope across carried state in nested HTML blo
     );
   }
 });
+
+test("Eta open delimiters share the same scope stack across exec and output tags", async () => {
+  const registry = await createRegistry();
+  const grammar = await registry.loadGrammar("text.html.eta");
+  const execOpen = findToken(tokenizeLine(grammar, "<% if (it.ok) { %>"), "<%", ETA_DELIMITER_SCOPE);
+  const escapedOpen = findToken(tokenizeLine(grammar, "<%= it.value %>"), "<%", ETA_DELIMITER_SCOPE);
+  const rawOpen = findToken(tokenizeLine(grammar, "<%~ include('/x') %>"), "<%", ETA_DELIMITER_SCOPE);
+
+  assert.ok(execOpen);
+  assert.ok(escapedOpen);
+  assert.ok(rawOpen);
+  assert.deepEqual(execOpen.scopes, escapedOpen.scopes);
+  assert.deepEqual(execOpen.scopes, rawOpen.scopes);
+});

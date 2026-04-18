@@ -284,7 +284,8 @@
       "name": "keyword.operator.js"
     },
     "eta-output-escaped": {
-      "name": "meta.embedded.block.eta.output.escaped",
+      "name": "meta.embedded.block.eta",
+      "contentName": "meta.embedded.block.eta.output.escaped",
       "begin": "(<%)(-|_)?(\\s*)(=)",
       "beginCaptures": {
         "1": {
@@ -313,7 +314,8 @@
       ]
     },
     "eta-output-raw": {
-      "name": "meta.embedded.block.eta.output.raw",
+      "name": "meta.embedded.block.eta",
+      "contentName": "meta.embedded.block.eta.output.raw",
       "begin": "(<%)(-|_)?(\\s*)(~)",
       "beginCaptures": {
         "1": {
@@ -342,7 +344,7 @@
       ]
     },
     "eta-comment": {
-      "name": "meta.embedded.block.eta.comment",
+      "name": "meta.embedded.block.eta",
       "begin": "(<%)(-|_)?(\\s*)(#)",
       "beginCaptures": {
         "1": {
@@ -367,7 +369,8 @@
       "contentName": "comment.block.eta"
     },
     "eta-exec": {
-      "name": "meta.embedded.block.eta.code",
+      "name": "meta.embedded.block.eta",
+      "contentName": "meta.embedded.block.eta.code",
       "begin": "(<%)(-|_)?(?!\\s*[=~#])",
       "beginCaptures": {
         "1": {

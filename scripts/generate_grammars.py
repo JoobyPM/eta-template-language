@@ -12,6 +12,7 @@ SCHEMA = "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlangu
 ETA_CLOSE_LOOKAHEAD = r"(?=(\s*)(-|_)?(%>))"
 ETA_DELIMITER_SCOPE = "punctuation.section.embedded.eta"
 ETA_JS_BODY_SCOPE = "source.eta.embedded.javascript"
+ETA_TAG_SCOPE = "meta.embedded.block.eta"
 
 ETA_REPOSITORY = {
     "eta-js-body": {
@@ -192,7 +193,8 @@ ETA_REPOSITORY = {
         "name": "keyword.operator.js",
     },
     "eta-output-escaped": {
-        "name": "meta.embedded.block.eta.output.escaped",
+        "name": ETA_TAG_SCOPE,
+        "contentName": "meta.embedded.block.eta.output.escaped",
         "begin": "(<%)(-|_)?(\\s*)(=)",
         "beginCaptures": {
             "1": {"name": ETA_DELIMITER_SCOPE},
@@ -207,7 +209,8 @@ ETA_REPOSITORY = {
         "patterns": [{"include": "#eta-js-body"}],
     },
     "eta-output-raw": {
-        "name": "meta.embedded.block.eta.output.raw",
+        "name": ETA_TAG_SCOPE,
+        "contentName": "meta.embedded.block.eta.output.raw",
         "begin": "(<%)(-|_)?(\\s*)(~)",
         "beginCaptures": {
             "1": {"name": ETA_DELIMITER_SCOPE},
@@ -222,7 +225,7 @@ ETA_REPOSITORY = {
         "patterns": [{"include": "#eta-js-body"}],
     },
     "eta-comment": {
-        "name": "meta.embedded.block.eta.comment",
+        "name": ETA_TAG_SCOPE,
         "begin": "(<%)(-|_)?(\\s*)(#)",
         "beginCaptures": {
             "1": {"name": ETA_DELIMITER_SCOPE},
@@ -237,7 +240,8 @@ ETA_REPOSITORY = {
         "contentName": "comment.block.eta",
     },
     "eta-exec": {
-        "name": "meta.embedded.block.eta.code",
+        "name": ETA_TAG_SCOPE,
+        "contentName": "meta.embedded.block.eta.code",
         "begin": "(<%)(-|_)?(?!\\s*[=~#])",
         "beginCaptures": {
             "1": {"name": ETA_DELIMITER_SCOPE},
