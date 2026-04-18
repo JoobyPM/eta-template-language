@@ -390,6 +390,14 @@ function readTag(source: string, start: number, slot: number): { nextIndex: numb
   };
 }
 
+export function scanEtaTagEnd(source: string, start: number): number {
+  if (!source.startsWith("<%", start)) {
+    throw new Error("Expected Eta tag start.");
+  }
+
+  return readTag(source, start, 0).nextIndex;
+}
+
 export function lexTemplate(source: string): TemplateNode[] {
   const nodes: TemplateNode[] = [];
   let cursor = 0;

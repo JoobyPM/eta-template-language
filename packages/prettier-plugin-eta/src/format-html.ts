@@ -10,6 +10,7 @@ import {
   indentationUnit,
   logFormattingFailure
 } from "./format-js.js";
+import { scanEtaTagEnd } from "./lexer.js";
 import { buildPrettierOptions } from "./prettier-options.js";
 import type { EtaPluginOptions, TagNode, TemplateNode } from "./types.js";
 
@@ -415,6 +416,51 @@ function leadingIndentation(line: string): string {
   return line.match(/^[\t ]*/)?.[0] ?? "";
 }
 
+function indentationWidth(indentation: string): number {
+  return indentation.length;
+}
+
+function detectIndentationStep(lines: string[]): number {
+  const widths = Array.from(
+    new Set(
+      lines
+        .map((line) => indentationWidth(leadingIndentation(line)))
+        .filter((width) => width > 0)
+    )
+  ).sort((left, right) => left - right);
+
+  if (widths.length === 0) {
+    return 0;
+  }
+
+  return widths.reduce((step, width, index) => {
+    if (index === 0) {
+      return width;
+    }
+    const difference = width - (widths[index - 1] ?? 0);
+    return difference > 0 ? Math.min(step, difference) : step;
+  }, widths[0] ?? 0);
+}
+
+function resolveIndentation(lines: string[], targetWidth: number, fallback: string): string {
+  if (targetWidth <= 0) {
+    return "";
+  }
+
+  for (const line of lines) {
+    const indentation = leadingIndentation(line);
+    if (indentationWidth(indentation) === targetWidth) {
+      return indentation;
+    }
+  }
+
+  if (fallback && indentationWidth(fallback) >= targetWidth) {
+    return fallback.slice(0, targetWidth);
+  }
+
+  return " ".repeat(targetWidth);
+}
+
 function findNeighborIndentation(lines: string[], index: number, direction: 1 | -1): string {
   for (
     let cursor = index + direction;
@@ -444,6 +490,7 @@ function classifyStandaloneExecTag(line: string): "open" | "close" | null {
 
 function normalizeStandaloneExecTagIndentation(source: string): string {
   const lines = source.split("\n");
+  const indentationStep = detectIndentationStep(lines);
 
   return lines
     .map((line, index) => {
@@ -455,10 +502,31 @@ function normalizeStandaloneExecTagIndentation(source: string): string {
       const currentIndentation = leadingIndentation(line);
       const previousIndentation = findNeighborIndentation(lines, index, -1);
       const nextIndentation = findNeighborIndentation(lines, index, 1);
-      const desiredIndentation =
+      const currentWidth = indentationWidth(currentIndentation);
+      const previousWidth = indentationWidth(previousIndentation);
+      const nextWidth = indentationWidth(nextIndentation);
+      let desiredIndentation =
         classification === "open"
           ? nextIndentation || currentIndentation || previousIndentation
           : previousIndentation || currentIndentation || nextIndentation;
+
+      if (classification === "close") {
+        const deeperNeighborWidths = [previousWidth, nextWidth].filter((width) => width > currentWidth);
+        if (indentationStep > 0 && deeperNeighborWidths.length > 0) {
+          const targetWidth = Math.max(0, Math.min(...deeperNeighborWidths) - indentationStep);
+          desiredIndentation = resolveIndentation(
+            lines,
+            targetWidth,
+            currentIndentation || previousIndentation || nextIndentation
+          );
+        } else if (previousWidth > 0 && previousWidth <= currentWidth) {
+          desiredIndentation = previousIndentation;
+        } else if (nextWidth > 0 && nextWidth < currentWidth) {
+          desiredIndentation = nextIndentation;
+        } else {
+          desiredIndentation = currentIndentation || nextIndentation || previousIndentation;
+        }
+      }
 
       if (!desiredIndentation || desiredIndentation === currentIndentation) {
         return line;
@@ -492,8 +560,12 @@ function scanQuotedAttributeValue(source: string, index: number): number {
 }
 
 function scanEtaTagInHtmlText(source: string, index: number): number {
-  const end = source.indexOf("%>", index + 2);
-  return end === -1 ? source.length : end + 2;
+  try {
+    return scanEtaTagEnd(source, index);
+  } catch (error) {
+    logFormattingFailure("html tag scan failed", error);
+    return source.length;
+  }
 }
 
 function findOpeningTagClose(source: string): number {
@@ -703,9 +775,10 @@ export async function formatTemplateDocument(
   const placeholderSource = placeholderParts.join("");
   const slotPattern = buildSlotPattern(replacements.keys());
   const formattedText = await formatTextPlaceholders(placeholderSource, options);
-  const rendered = wrapLongEmbeddedHtmlTagLines(
-    normalizeStandaloneExecTagIndentation(replaceSlots(formattedText, replacements, slotPattern)),
-    options
+  const normalized = normalizeStandaloneExecTagIndentation(
+    replaceSlots(formattedText, replacements, slotPattern)
   );
-  return rendered.endsWith("\n") ? rendered : `${rendered}\n`;
+  const wrapped = wrapLongEmbeddedHtmlTagLines(normalized, options);
+  const rendered = normalizeStandaloneExecTagIndentation(wrapped);
+  return `${rendered.replace(/\n+$/, "")}\n`;
 }

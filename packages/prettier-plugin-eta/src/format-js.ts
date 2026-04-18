@@ -62,6 +62,10 @@ function dedentWrappedExpression(text: string): string {
   return dedentExtractedBlock(normalized);
 }
 
+function stripWrapperSemicolon(text: string): string {
+  return text.replace(/;\s*$/, "");
+}
+
 function createMarker(prefix: string): string {
   return `__ETA_${prefix}_${randomUUID().replace(/-/g, "")}__`;
 }
@@ -222,7 +226,7 @@ export async function formatExpressionSource(
       throw new Error("Unable to extract Eta expression from formatted wrapper.");
     }
 
-    const extracted = formatted.slice(startIndex + prefix.length, endMarkerIndex).replace(/;\s*$/, "");
+    const extracted = stripWrapperSemicolon(formatted.slice(startIndex + prefix.length, endMarkerIndex));
     return dedentWrappedExpression(extracted);
   } catch (error) {
     logFormattingFailure("expression formatting failed", error);
@@ -252,8 +256,8 @@ export async function formatExpressionSourceInline(
       throw new Error("Unable to extract inline Eta expression from formatted wrapper.");
     }
 
-    const extracted = formatted.slice(startIndex + prefix.length, endMarkerIndex).replace(/;\s*$/, "");
-    return trimOuterWhitespace(extracted).replace(/\s+/g, " ");
+    const extracted = stripWrapperSemicolon(formatted.slice(startIndex + prefix.length, endMarkerIndex));
+    return trimOuterWhitespace(extracted);
   } catch (error) {
     logFormattingFailure("inline expression formatting failed", error);
     return normalized;

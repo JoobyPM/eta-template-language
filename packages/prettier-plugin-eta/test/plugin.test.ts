@@ -3,6 +3,7 @@ import test from "node:test";
 
 import * as prettier from "prettier";
 
+import { formatExpressionSourceInline } from "../src/format-js.js";
 import plugin from "../src/index.js";
 
 async function formatEta(source: string, options: Record<string, unknown> = {}): Promise<string> {
@@ -252,6 +253,11 @@ test("preserves markdown tables and fenced code blocks in markdown eta templates
     printWidth: 120,
     proseWrap: "preserve"
   });
+  const secondPass = await formatEta(result, {
+    filepath: "/tmp/configuration.md.eta",
+    printWidth: 120,
+    proseWrap: "preserve"
+  });
 
   assert.equal(
     result,
@@ -275,10 +281,10 @@ test("preserves markdown tables and fenced code blocks in markdown eta templates
       "## Next",
       "",
       "Done.",
-      "",
       ""
     ].join("\n")
   );
+  assert.equal(secondPass, result);
 });
 
 test("preserves standalone eta control line indentation in nested html", async () => {
@@ -322,6 +328,37 @@ test("preserves standalone eta control line indentation in nested html", async (
   );
 });
 
+test("keeps standalone eta close tags aligned with their block instead of the body", async () => {
+  const source = [
+    "<div>",
+    "  <% if (it.ready) { %>",
+    "    <span>ready</span>",
+    "  <% } else { %>",
+    "    <span>pending</span>",
+    "  <% } %>",
+    "</div>",
+    ""
+  ].join("\n");
+
+  const result = await formatEta(source, {
+    printWidth: 120
+  });
+
+  assert.equal(
+    result,
+    [
+      "<div>",
+      "  <% if (it.ready) { %>",
+      "  <span>ready</span>",
+      "  <% } else { %>",
+      "  <span>pending</span>",
+      "  <% } %>",
+      "</div>",
+      ""
+    ].join("\n")
+  );
+});
+
 test("keeps standalone raw output tags inline when the source expression was inline", async () => {
   const source = [
     "<table>",
@@ -349,6 +386,9 @@ test("wraps long html start tags that contain embedded eta attributes", async ()
   const source = [
     "<thead><tr>",
     "<% for (const col of it.cols) { %>",
+    // Deliberately keeps the unescaped \"$t\" attribute fragment as Eta template syntax.
+    // This is a fragile HTML-parser edge case and the expected layout may need updating
+    // if Prettier changes how it tokenizes malformed-but-tolerated attribute values.
     '  <th<% if (col.w) { %> style="width:<%= col.w %>"<% } %><% if (col.i18n) { %> x-text="<%= it.tFn || "$t" %>(\'<%= col.i18n %>\')"<% } %><% if (col.cls) { %> class="<%= col.cls %>"<% } %>></th>',
     "<% } %>",
     "</tr></thead>",
@@ -373,6 +413,31 @@ test("wraps long html start tags that contain embedded eta attributes", async ()
       ""
     ].join("\n")
   );
+});
+
+test("does not split eta tags in html attributes at percent-close inside string literals", async () => {
+  const source = [
+    '<div class="very-long-class-name"<% if (it.pattern) { %> data-pattern="<%= \'%> marker\' %>"<% } %> data-state="ready"></div>',
+    ""
+  ].join("\n");
+
+  const result = await formatEta(source, {
+    printWidth: 80
+  });
+  const secondPass = await formatEta(result, {
+    printWidth: 80
+  });
+
+  assert.match(result, /data-pattern="<%= ["']%> marker["'] %>"/);
+  assert.equal(secondPass, result);
+});
+
+test("preserves whitespace inside literals when formatting inline expressions", async () => {
+  const result = await formatExpressionSourceInline('"a  b" || /x  y/.source || `c  d`', {
+    printWidth: 120
+  });
+
+  assert.equal(result, '"a  b" || /x  y/.source || `c  d`');
 });
 
 test("rejects malformed eta tags", async () => {
