@@ -1,0 +1,108 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Eta",
+  "scopeName": "text.html.eta",
+  "patterns": [
+    {
+      "include": "text.html.basic"
+    },
+    {
+      "include": "#eta-output-escaped"
+    },
+    {
+      "include": "#eta-output-raw"
+    },
+    {
+      "include": "#eta-exec"
+    }
+  ],
+  "repository": {
+    "eta-output-escaped": {
+      "name": "meta.embedded.block.eta.output.escaped",
+      "begin": "(<%)(-|_)?(\\s*)(=)",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.section.embedded.begin.eta"
+        },
+        "2": {
+          "name": "keyword.operator.whitespace-control.eta"
+        },
+        "4": {
+          "name": "keyword.operator.output.escaped.eta"
+        }
+      },
+      "end": "(\\s*)(-|_)?(%>)",
+      "endCaptures": {
+        "2": {
+          "name": "keyword.operator.whitespace-control.eta"
+        },
+        "3": {
+          "name": "punctuation.section.embedded.end.eta"
+        }
+      },
+      "contentName": "source.js.embedded.eta",
+      "patterns": [
+        {
+          "include": "source.js"
+        }
+      ]
+    },
+    "eta-output-raw": {
+      "name": "meta.embedded.block.eta.output.raw",
+      "begin": "(<%)(-|_)?(\\s*)(~)",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.section.embedded.begin.eta"
+        },
+        "2": {
+          "name": "keyword.operator.whitespace-control.eta"
+        },
+        "4": {
+          "name": "keyword.operator.output.raw.eta"
+        }
+      },
+      "end": "(\\s*)(-|_)?(%>)",
+      "endCaptures": {
+        "2": {
+          "name": "keyword.operator.whitespace-control.eta"
+        },
+        "3": {
+          "name": "punctuation.section.embedded.end.eta"
+        }
+      },
+      "contentName": "source.js.embedded.eta",
+      "patterns": [
+        {
+          "include": "source.js"
+        }
+      ]
+    },
+    "eta-exec": {
+      "name": "meta.embedded.block.eta.code",
+      "begin": "(<%)(-|_)?(?!\\s*[=~])",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.section.embedded.begin.eta"
+        },
+        "2": {
+          "name": "keyword.operator.whitespace-control.eta"
+        }
+      },
+      "end": "(\\s*)(-|_)?(%>)",
+      "endCaptures": {
+        "2": {
+          "name": "keyword.operator.whitespace-control.eta"
+        },
+        "3": {
+          "name": "punctuation.section.embedded.end.eta"
+        }
+      },
+      "contentName": "source.js.embedded.eta",
+      "patterns": [
+        {
+          "include": "source.js"
+        }
+      ]
+    }
+  }
+}
