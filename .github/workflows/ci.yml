@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - "codex/**"
+  pull_request:
+
+jobs:
+  prettier-plugin:
+    name: Prettier Plugin
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Prettier plugin
+        run: npm run build --workspace prettier-plugin-eta
+
+      - name: Test Prettier plugin
+        run: npm test --workspace prettier-plugin-eta
+
+  extension:
+    name: Extension
+    runs-on: ubuntu-latest
+    needs: prettier-plugin
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build extension
+        run: npm run build
+
+      - name: Run extension runtime and syntax regression checks
+        run: |
+          npm run test:extension
+          npm run test:syntax
+
+      - name: Package VSIX
+        run: node scripts/package_extension.mjs
+
+      - name: Verify packaged VSIX
+        run: node --test tests/vsix-package.test.mjs

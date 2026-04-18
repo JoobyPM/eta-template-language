@@ -36,11 +36,17 @@ VALID_CASES = {
         "<%_ for (const x of xs) { _%>",
         "<%/* comment */%>",
     ],
+    "comment": [
+        "<%# note %>",
+        "<%-# note -%>",
+        "<%_ # note _%>",
+    ],
 }
 
 INVALID_FOR_EXEC = [
     "<%= it.name %>",
     "<%~ it.html %>",
+    "<%# note %>",
 ]
 
 END_CASES = [
@@ -56,12 +62,44 @@ def compile_pattern(repo: dict, key: str, field: str) -> re.Pattern[str]:
     return re.compile(raw)
 
 
-def run() -> None:
-    for file in GRAMMAR_FILES:
-        data = json.loads(file.read_text())
+def test_syntax_patterns_match_the_generator_contract() -> None:
+    parsed_grammars = [(file, json.loads(file.read_text())) for file in GRAMMAR_FILES]
+    shared_repo = parsed_grammars[0][1]["repository"]
+    for file, data in parsed_grammars[1:]:
+        assert data["repository"] == shared_repo, f"repository mismatch in {file}"
+
+    curly_repo = shared_repo["eta-js-curly-block"]
+    js_body = shared_repo["eta-js-body"]
+    js_repo = shared_repo["eta-js"]
+    js_pattern_includes = [pattern["include"] for pattern in js_repo["patterns"]]
+    comment_block_index = js_pattern_includes.index("#eta-js-comment-block")
+    curly_block_index = js_pattern_includes.index("#eta-js-curly-block")
+    curly_close_index = js_pattern_includes.index("#eta-js-curly-close")
+    operator_index = js_pattern_includes.index("#eta-js-operator")
+
+    assert js_body["begin"] == r"\G", "js body begin mismatch in shared Eta repository"
+    assert js_body["end"] == r"(?=(\s*)(-|_)?(%>))", "js body end mismatch in shared Eta repository"
+    assert js_body["name"] == "source.js.embedded.eta", "js body scope mismatch in shared Eta repository"
+    assert js_body["patterns"][0]["include"] == "#eta-js", "js body should route through the Eta JS lexer"
+    assert len(js_body["patterns"]) == 1, "js body should use a single Eta JS entrypoint"
+    assert comment_block_index < curly_block_index, "Eta JS lexer should prioritize comments before braces"
+    assert curly_block_index < curly_close_index, "Eta JS lexer should scan opening braces before close-only braces"
+    assert curly_close_index < operator_index, "Eta JS lexer should recognize curly-close before generic operators"
+
+    assert curly_repo["begin"] == r"\{", "curly begin mismatch in shared Eta repository"
+    assert curly_repo["end"] == r"(\})|(?=(\s*)(-|_)?(%>))", "curly end mismatch in shared Eta repository"
+    assert curly_repo["beginCaptures"]["0"]["name"] == "punctuation.section.embedded.begin.eta", (
+        "curly begin scope mismatch in shared Eta repository"
+    )
+    assert curly_repo["endCaptures"]["1"]["name"] == "punctuation.section.embedded.end.eta", (
+        "curly end scope mismatch in shared Eta repository"
+    )
+
+    for file, data in parsed_grammars:
         repo = data["repository"]
         escaped_begin = compile_pattern(repo, "eta-output-escaped", "begin")
         raw_begin = compile_pattern(repo, "eta-output-raw", "begin")
+        comment_begin = compile_pattern(repo, "eta-comment", "begin")
         exec_begin = compile_pattern(repo, "eta-exec", "begin")
         end_pat = compile_pattern(repo, "eta-exec", "end")
 
@@ -71,13 +109,29 @@ def run() -> None:
             assert raw_begin.search(sample), f"raw begin mismatch in {file}: {sample}"
         for sample in VALID_CASES["exec"]:
             assert exec_begin.search(sample), f"exec begin mismatch in {file}: {sample}"
+        for sample in VALID_CASES["comment"]:
+            assert comment_begin.search(sample), f"comment begin mismatch in {file}: {sample}"
         for sample in INVALID_FOR_EXEC:
             assert not exec_begin.search(sample), f"exec should not match prefixed tag in {file}: {sample}"
         for sample in END_CASES:
             assert end_pat.search(sample), f"end mismatch in {file}: {sample}"
 
-    print("syntax-pattern checks passed")
+        for key in ("eta-output-escaped", "eta-output-raw", "eta-exec"):
+            patterns = repo[key]["patterns"]
+            assert patterns[0]["include"] == "#eta-js-body", (
+                f"{key} should delegate body parsing through the Eta JS wrapper in {file}"
+            )
+            assert len(patterns) == 1, f"{key} should use a single Eta JS wrapper in {file}"
+
+        if file.name == "eta.injection.tmLanguage.json":
+            selector = data["injectionSelector"]
+            assert "-comment" in selector, f"injection selector should still exclude HTML comments: {selector}"
+            assert "-string" not in selector, (
+                "injection selector must allow Eta tags inside HTML attribute strings; "
+                f"got: {selector}"
+            )
 
 
 if __name__ == "__main__":
-    run()
+    test_syntax_patterns_match_the_generator_contract()
+    print("syntax-pattern checks passed")

@@ -1,28 +1,46 @@
 # Eta Template Language
 
-Language support for Eta templates in Cursor and VS Code compatible editors.
+Eta language support plus a dedicated Prettier formatter for Cursor and VS Code-compatible editors.
 
-## Source-of-truth alignment
+## Architecture
 
-This grammar is aligned to Eta v4 parsing behavior from `src/parse.ts` in the `bgub/eta` repository:
+The repository now has two clear layers:
 
-- Open tag shape: `<%` + optional trim marker (`-` or `_`) + optional whitespace + optional prefix (`=` interpolate, `~` raw).
-- Close tag shape: optional whitespace + optional trim marker (`-` or `_`) + `%>`.
-- JS strings/comments/template literals are valid inside tags (delegated to `source.js`).
+- The root package remains the editor extension with grammar files, snippets, and a thin formatter wrapper.
+- `packages/prettier-plugin-eta` contains the reusable formatter core and Prettier plugin.
+
+The extension is bundled into a single runtime file for packaging, and the VSIX ships `prettier` as an explicit production dependency. The Eta plugin code is compiled into `dist/extension.js`, while `prettier` is resolved from the packaged `node_modules/prettier` runtime. The packaging step stages a stripped extension manifest so workspace metadata does not leak into the installed VSIX.
+
+The formatter uses a stateful Eta scanner rather than a regex. It safely walks Eta tags, understands JavaScript strings, comments, template literals, and regex literals inside tags, formats JS payloads with Prettier, formats surrounding HTML through placeholder-based document formatting, and then stitches the template back together while preserving trim markers.
 
 ## Features
 
 - Dedicated Eta language id (`eta`) with `.eta` file association.
 - HTML highlighting outside Eta tags.
 - Embedded JavaScript highlighting inside Eta tags.
-- Distinct grammar rules for escaped output (`<%=`), raw output (`<%~`), and execution tags (`<% ... %>`).
-- Whitespace-control delimiter markers (`-` and `_`) recognized on both opening and closing sides, including forms like `<%- = it.name -%>`.
+- Distinct grammar rules for escaped output (`<%=`), raw output (`<%~`), comments (`<%#`), and execution tags (`<% ... %>`).
+- Prettier-backed full document formatting for Eta templates.
+- Whitespace-control delimiter markers (`-` and `_`) recognized on both opening and closing sides.
 - Eta grammar injection for HTML files.
-- Auto-closing pairs for Eta delimiters.
+- Auto-closing pairs for Eta delimiters and a formatter entry point inside the extension.
 - Useful snippets for common Eta patterns.
 - Emmet support in Eta files via `eta -> html` mapping.
 
-## Install (local development)
+## Workspace Layout
+
+```text
+packages/prettier-plugin-eta/
+  src/
+  test/
+src/
+  extension.ts
+  formatter.ts
+syntaxes/
+language-configuration.json
+snippets/
+```
+
+## Local Development
 
 1. Install dependencies:
 
@@ -30,13 +48,56 @@ This grammar is aligned to Eta v4 parsing behavior from `src/parse.ts` in the `b
    npm install
    ```
 
-2. Build a VSIX package:
+2. Build the plugin and extension:
+
+   ```bash
+   npm run build
+   ```
+
+3. Run type checks, syntax checks, plugin tests, and extension bundle checks:
+
+   ```bash
+   npm test
+   ```
+
+4. Build and validate a VSIX package:
 
    ```bash
    npm run package
    ```
 
-3. In Cursor/VS Code, run **Extensions: Install from VSIX...** and choose the generated `.vsix`.
+5. In Cursor/VS Code, run **Extensions: Install from VSIX...** and choose the generated `.vsix`.
+
+## CI And Release
+
+- `.github/workflows/ci.yml` runs the dedicated `prettier-plugin-eta` build/test job and then validates the bundled extension runtime, syntax checks, VSIX packaging, and packaged artifact contents.
+- `.github/workflows/publish-prettier-plugin.yml` publishes `packages/prettier-plugin-eta` to npm through npm trusted publishing.
+- The repository now keeps the extension package and `prettier-plugin-eta` in lockstep version numbers. Update both package manifests together and record user-visible changes in `CHANGELOG.md`.
+
+To publish the Prettier plugin:
+
+1. Bump both `package.json` and `packages/prettier-plugin-eta/package.json` to the version you want to release.
+2. Configure npm trusted publishing for package `prettier-plugin-eta` with:
+   - GitHub owner/user: `JoobyPM`
+   - repository: `eta-template-language`
+   - workflow filename: `publish-prettier-plugin.yml`
+3. Push a git tag in the form `prettier-plugin-eta-v<version>`.
+4. Let GitHub Actions publish from that tag; no `NPM_TOKEN` secret is required for publishing.
+
+The publish workflow verifies that the tag version matches the package version before it runs `npm publish`. If the package later needs private npm dependencies during CI, add a separate read-only install token rather than a publish token.
+
+## Formatter Scope
+
+The formatter intentionally focuses on safe full-document formatting:
+
+- Eta tag scanning is structure-aware instead of regex-based.
+- JavaScript inside execution and output tags is formatted with Prettier's JS parser.
+- HTML around Eta tags is formatted with Prettier's HTML parser.
+- Range formatting is intentionally not implemented yet.
+
+## Known Limitations
+
+- Prettier may reflow tagged templates such as `html\`...\`` inside Eta tags according to its own tagged-template heuristics. That behavior comes from Prettier's JavaScript formatter rather than the Eta parser.
 
 ## Snippets
 
@@ -52,16 +113,15 @@ This grammar is aligned to Eta v4 parsing behavior from `src/parse.ts` in the `b
 
 Open `samples/demo.eta` after installation for a quick smoke test.
 
-## Project position
-
-This repository is an independent Eta language extension and intentionally contains no references to other Eta extension projects.
-
 ## Validation
 
-Run the lightweight grammar checks:
+Run the extension grammar checks plus plugin tests:
 
 ```bash
-python scripts/generate_grammars.py
-python tests/test_generated_grammars.py
-python tests/test_syntax_patterns.py
+npm test
 ```
+
+## Project Docs
+
+- Contributor workflow and release expectations: [CONTRIBUTING.md](./CONTRIBUTING.md)
+- Release history: [CHANGELOG.md](./CHANGELOG.md)

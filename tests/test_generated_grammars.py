@@ -17,13 +17,13 @@ def load(path: str) -> dict:
     return json.loads((ROOT / path).read_text())
 
 
-def run() -> None:
+def test_generated_grammars_are_in_sync() -> None:
     main_actual = load("syntaxes/eta.tmLanguage.json")
     inj_actual = load("syntaxes/eta.injection.tmLanguage.json")
     assert main_actual == build_main_grammar(), "eta.tmLanguage.json is out of sync; run scripts/generate_grammars.py"
     assert inj_actual == build_injection_grammar(), "eta.injection.tmLanguage.json is out of sync; run scripts/generate_grammars.py"
-    print("grammar generation sync checks passed")
 
 
 if __name__ == "__main__":
-    run()
+    test_generated_grammars_are_in_sync()
+    print("grammar generation sync checks passed")

@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "Eta (HTML injection)",
   "scopeName": "text.html.eta.injection",
-  "injectionSelector": "L:text.html.basic -comment -string",
+  "injectionSelector": "L:text.html.basic -comment",
   "patterns": [
     {
       "include": "#eta-output-escaped"
@@ -11,10 +11,278 @@
       "include": "#eta-output-raw"
     },
     {
+      "include": "#eta-comment"
+    },
+    {
       "include": "#eta-exec"
     }
   ],
   "repository": {
+    "eta-js-body": {
+      "begin": "\\G",
+      "end": "(?=(\\s*)(-|_)?(%>))",
+      "name": "source.js.embedded.eta",
+      "patterns": [
+        {
+          "include": "#eta-js"
+        }
+      ]
+    },
+    "eta-js": {
+      "patterns": [
+        {
+          "include": "#eta-js-comment-block"
+        },
+        {
+          "include": "#eta-js-comment-line"
+        },
+        {
+          "include": "#eta-js-template-string"
+        },
+        {
+          "include": "#eta-js-string-single"
+        },
+        {
+          "include": "#eta-js-string-double"
+        },
+        {
+          "include": "#eta-js-curly-block"
+        },
+        {
+          "include": "#eta-js-curly-close"
+        },
+        {
+          "include": "#eta-js-paren-group"
+        },
+        {
+          "include": "#eta-js-bracket-group"
+        },
+        {
+          "include": "#eta-js-keyword"
+        },
+        {
+          "include": "#eta-js-constant"
+        },
+        {
+          "include": "#eta-js-number"
+        },
+        {
+          "include": "#eta-js-identifier"
+        },
+        {
+          "include": "#eta-js-accessor"
+        },
+        {
+          "include": "#eta-js-punctuation"
+        },
+        {
+          "include": "#eta-js-operator"
+        }
+      ]
+    },
+    "eta-js-comment-block": {
+      "name": "comment.block.js",
+      "begin": "/\\*",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.comment.js"
+        }
+      },
+      "end": "\\*/",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.comment.js"
+        }
+      }
+    },
+    "eta-js-comment-line": {
+      "name": "comment.line.double-slash.js",
+      "begin": "//",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.comment.js"
+        }
+      },
+      "end": "(?=(\\s*)(-|_)?(%>))|(?=$)"
+    },
+    "eta-js-template-string": {
+      "name": "string.quoted.template.js",
+      "begin": "`",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.js"
+        }
+      },
+      "end": "`",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.js"
+        }
+      },
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.js"
+        },
+        {
+          "include": "#eta-js-template-interpolation"
+        }
+      ]
+    },
+    "eta-js-template-interpolation": {
+      "name": "meta.template.expression.js",
+      "begin": "\\$\\{",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.embedded.begin.js"
+        }
+      },
+      "end": "(\\})|(?=(\\s*)(-|_)?(%>))",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.section.embedded.end.js"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#eta-js"
+        }
+      ]
+    },
+    "eta-js-string-single": {
+      "name": "string.quoted.single.js",
+      "begin": "'",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.js"
+        }
+      },
+      "end": "'",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.js"
+        }
+      },
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.js"
+        }
+      ]
+    },
+    "eta-js-string-double": {
+      "name": "string.quoted.double.js",
+      "begin": "\"",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.js"
+        }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.js"
+        }
+      },
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.js"
+        }
+      ]
+    },
+    "eta-js-curly-block": {
+      "name": "meta.embedded.block.eta.js.curly",
+      "begin": "\\{",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.embedded.begin.eta"
+        }
+      },
+      "end": "(\\})|(?=(\\s*)(-|_)?(%>))",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.section.embedded.end.eta"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#eta-js"
+        }
+      ]
+    },
+    "eta-js-curly-close": {
+      "match": "\\}",
+      "name": "punctuation.section.embedded.end.eta"
+    },
+    "eta-js-paren-group": {
+      "name": "meta.group.parens.eta.js",
+      "begin": "\\(",
+      "beginCaptures": {
+        "0": {
+          "name": "meta.brace.round.js"
+        }
+      },
+      "end": "(\\))|(?=(\\s*)(-|_)?(%>))",
+      "endCaptures": {
+        "1": {
+          "name": "meta.brace.round.js"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#eta-js"
+        }
+      ]
+    },
+    "eta-js-bracket-group": {
+      "name": "meta.group.brackets.eta.js",
+      "begin": "\\[",
+      "beginCaptures": {
+        "0": {
+          "name": "meta.brace.square.js"
+        }
+      },
+      "end": "(\\])|(?=(\\s*)(-|_)?(%>))",
+      "endCaptures": {
+        "1": {
+          "name": "meta.brace.square.js"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#eta-js"
+        }
+      ]
+    },
+    "eta-js-keyword": {
+      "match": "(?<![_$[:alnum:]])(?:async|await|break|case|catch|const|continue|default|do|else|finally|for|function|if|in|let|new|of|return|switch|throw|try|typeof|var|while)(?![_$[:alnum:]])",
+      "name": "keyword.control.js"
+    },
+    "eta-js-constant": {
+      "match": "(?<![_$[:alnum:]])(?:false|null|this|true|undefined)(?![_$[:alnum:]])",
+      "name": "constant.language.js"
+    },
+    "eta-js-number": {
+      "match": "(?<![_$[:alnum:]])(?:0[bB][01](?:_?[01])*n?|0[oO][0-7](?:_?[0-7])*n?|0[xX][0-9A-Fa-f](?:_?[0-9A-Fa-f])*n?|\\d(?:_?\\d)*n|(?:\\d(?:_?\\d)*\\.\\d(?:_?\\d)*|\\d(?:_?\\d)*\\.|\\.\\d(?:_?\\d)*|\\d(?:_?\\d)*)(?:[eE][+-]?\\d(?:_?\\d)*)?)",
+      "name": "constant.numeric.js"
+    },
+    "eta-js-identifier": {
+      "match": "[_$[:alpha:]][_$[:alnum:]]*",
+      "name": "variable.other.readwrite.js"
+    },
+    "eta-js-accessor": {
+      "match": "\\.",
+      "name": "punctuation.accessor.js"
+    },
+    "eta-js-punctuation": {
+      "match": "[,;]",
+      "name": "punctuation.separator.delimiter.js"
+    },
+    "eta-js-operator": {
+      "match": "===|!==|=>|==|!=|<=|>=|\\+\\+|--|\\|\\||&&|\\?\\?|[+\\-*/%?:=<>!&|~^]",
+      "name": "keyword.operator.js"
+    },
     "eta-output-escaped": {
       "name": "meta.embedded.block.eta.output.escaped",
       "begin": "(<%)(-|_)?(\\s*)(=)",
@@ -38,10 +306,9 @@
           "name": "punctuation.section.embedded.end.eta"
         }
       },
-      "contentName": "source.js.embedded.eta",
       "patterns": [
         {
-          "include": "source.js"
+          "include": "#eta-js-body"
         }
       ]
     },
@@ -68,16 +335,40 @@
           "name": "punctuation.section.embedded.end.eta"
         }
       },
-      "contentName": "source.js.embedded.eta",
       "patterns": [
         {
-          "include": "source.js"
+          "include": "#eta-js-body"
         }
       ]
     },
+    "eta-comment": {
+      "name": "meta.embedded.block.eta.comment",
+      "begin": "(<%)(-|_)?(\\s*)(#)",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.section.embedded.begin.eta"
+        },
+        "2": {
+          "name": "keyword.operator.whitespace-control.eta"
+        },
+        "4": {
+          "name": "keyword.operator.comment.eta"
+        }
+      },
+      "end": "(\\s*)(-|_)?(%>)",
+      "endCaptures": {
+        "2": {
+          "name": "keyword.operator.whitespace-control.eta"
+        },
+        "3": {
+          "name": "punctuation.section.embedded.end.eta"
+        }
+      },
+      "contentName": "comment.block.eta"
+    },
     "eta-exec": {
       "name": "meta.embedded.block.eta.code",
-      "begin": "(<%)(-|_)?(?!\\s*[=~])",
+      "begin": "(<%)(-|_)?(?!\\s*[=~#])",
       "beginCaptures": {
         "1": {
           "name": "punctuation.section.embedded.begin.eta"
@@ -95,10 +386,9 @@
           "name": "punctuation.section.embedded.end.eta"
         }
       },
-      "contentName": "source.js.embedded.eta",
       "patterns": [
         {
-          "include": "source.js"
+          "include": "#eta-js-body"
         }
       ]
     }

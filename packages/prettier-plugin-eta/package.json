@@ -1,0 +1,50 @@
+{
+  "name": "prettier-plugin-eta",
+  "version": "0.2.3",
+  "description": "Prettier plugin for Eta templates.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JoobyPM/eta-template-language.git",
+    "directory": "packages/prettier-plugin-eta"
+  },
+  "bugs": {
+    "url": "https://github.com/JoobyPM/eta-template-language/issues"
+  },
+  "homepage": "https://github.com/JoobyPM/eta-template-language/tree/main/packages/prettier-plugin-eta#readme",
+  "keywords": [
+    "eta",
+    "prettier",
+    "prettier-plugin",
+    "template",
+    "html",
+    "javascript"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/test/plugin.test.js"
+  },
+  "peerDependencies": {
+    "prettier": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  }
+}
