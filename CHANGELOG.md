@@ -7,6 +7,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.9] - 2026-04-19
+
+### Changed
+
+- Removed `<%` / `%>` from Eta editor bracket-pair configuration so Cursor and VS Code no longer recolor nested Eta delimiters by bracket nesting depth.
+
 ## [0.2.8] - 2026-04-19
 
 ### Changed

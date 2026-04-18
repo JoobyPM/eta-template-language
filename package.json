@@ -2,7 +2,7 @@
   "name": "eta-template-language",
   "displayName": "Eta Template Language",
   "description": "Eta syntax highlighting and Prettier-backed formatting for Cursor and VS Code-compatible editors.",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "publisher": "JoobyPM",
   "license": "MIT",
   "engines": {

@@ -74,6 +74,12 @@ test("packaged VSIX contains the bundled extension runtime", async (t) => {
     ),
     "Eta language configuration should not colorize JavaScript braces as top-level editor brackets"
   );
+  assert.ok(
+    !(packagedLanguageConfiguration.brackets ?? []).some(
+      (pair) => Array.isArray(pair) && pair[0] === "<%" && pair[1] === "%>"
+    ),
+    "Eta language configuration should not colorize Eta delimiters as editor bracket pairs"
+  );
 
   const bundle = execFileSync("unzip", ["-p", vsixPath, "extension/dist/extension.js"], {
     encoding: "utf8",
