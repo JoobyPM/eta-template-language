@@ -67,16 +67,30 @@ function normalizeFallback(text: string): string {
   return dedent(trimmed);
 }
 
+function trimTrailingBlankLineEntries(lines: string[]): string[] {
+  const result = [...lines];
+
+  while (result.length > 0 && !result[result.length - 1]?.trim()) {
+    result.pop();
+  }
+
+  return result;
+}
+
 function extractFunctionBody(formatted: string): string {
   const prefix = "async function __eta_exec__() {";
   const start = formatted.indexOf(prefix);
-  const end = formatted.lastIndexOf("}");
-  if (start === -1 || end === -1 || end < start) {
+  if (start === -1) {
     throw new Error("Unable to extract formatted Eta statement block from Prettier wrapper.");
   }
 
-  const snippet = formatted.slice(start + prefix.length, end);
-  return dedent(snippet);
+  const lines = trimTrailingBlankLineEntries(formatted.slice(start + prefix.length).split("\n"));
+  const closingLine = lines.pop();
+  if (closingLine?.trim() !== "}") {
+    throw new Error("Unable to extract formatted Eta statement block from Prettier wrapper.");
+  }
+
+  return dedent(lines.join("\n"));
 }
 
 function extractBeforePlaceholder(formattedBody: string, placeholder: string): string {
@@ -105,17 +119,22 @@ function extractBetweenPlaceholders(
 function extractCallArgument(formatted: string): string {
   const prefix = "__eta_expr__(";
   const start = formatted.indexOf(prefix);
-  const end = formatted.lastIndexOf(");");
-  if (start === -1 || end === -1 || end < start) {
+  if (start === -1) {
     throw new Error("Unable to extract formatted Eta expression from Prettier wrapper.");
   }
 
-  const snippet = formatted.slice(start + prefix.length, end);
-  return dedent(snippet);
+  const lines = trimTrailingBlankLineEntries(dedent(formatted.slice(start + prefix.length)).split("\n"));
+  const closingLine = lines.pop();
+  if (closingLine === undefined || !closingLine.trimEnd().endsWith(");")) {
+    throw new Error("Unable to extract formatted Eta expression from Prettier wrapper.");
+  }
+
+  lines.push(closingLine.slice(0, closingLine.lastIndexOf(");")));
+  return trimBlankLines(lines.join("\n"));
 }
 
 function isOpenControlFragment(source: string): boolean {
-  return source.endsWith("{") && !source.startsWith("}");
+  return source.endsWith("{") && !source.startsWith("}") && !/^\s*(else\b|catch\b|finally\b)/.test(source);
 }
 
 function isElseFragment(source: string): boolean {

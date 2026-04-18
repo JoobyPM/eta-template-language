@@ -53,5 +53,7 @@ export interface EtaPluginOptions {
   useTabs?: boolean;
   singleQuote?: boolean;
   semi?: boolean;
+  proseWrap?: "always" | "never" | "preserve";
+  filepath?: string;
   etaFormatHtml?: boolean;
 }

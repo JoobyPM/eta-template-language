@@ -1,6 +1,13 @@
+import * as path from "node:path";
+import { pathToFileURL } from "node:url";
 import * as vscode from "vscode";
 
 type PrettierModule = typeof import("prettier");
+type EtaPluginModule = { default?: object } & Record<string, unknown>;
+
+export const etaFormatterOutputChannel = vscode.window.createOutputChannel("Eta Formatter");
+
+let lastShownErrorMessage: string | undefined;
 
 async function importEsmModule<T>(specifier: string): Promise<T> {
   const importer = Function("target", "return import(target);") as (
@@ -14,9 +21,8 @@ async function loadPrettier(): Promise<PrettierModule> {
 }
 
 async function loadEtaPlugin(): Promise<object> {
-  const module = await importEsmModule<{ default?: object } & Record<string, unknown>>(
-    "prettier-plugin-eta",
-  );
+  const pluginPath = path.resolve(__dirname, "..", "packages", "prettier-plugin-eta", "dist", "src", "index.js");
+  const module = await importEsmModule<EtaPluginModule>(pathToFileURL(pluginPath).href);
   return module.default ?? module;
 }
 
@@ -40,6 +46,11 @@ function fullDocumentRange(document: vscode.TextDocument): vscode.Range {
   return new vscode.Range(new vscode.Position(0, 0), end);
 }
 
+function resolvedEtaFormatHtml(config: Record<string, unknown>): boolean | undefined {
+  const etaFormatHtml = (config as { etaFormatHtml?: unknown }).etaFormatHtml;
+  return typeof etaFormatHtml === "boolean" ? etaFormatHtml : undefined;
+}
+
 export async function provideEtaFormattingEdits(
   document: vscode.TextDocument,
   options: vscode.FormattingOptions,
@@ -55,10 +66,7 @@ export async function provideEtaFormattingEdits(
       parser: "eta-template",
       plugins: [plugin],
       filepath: document.uri.fsPath,
-      tabWidth:
-        typeof options.tabSize === "number" && Number.isFinite(options.tabSize)
-          ? options.tabSize
-          : 2,
+      tabWidth: Number.isFinite(options.tabSize) ? options.tabSize : 2,
       useTabs: !options.insertSpaces,
       printWidth: formatterConfig.get<number>(
         "printWidth",
@@ -72,17 +80,33 @@ export async function provideEtaFormattingEdits(
         "semi",
         typeof resolvedConfig.semi === "boolean" ? resolvedConfig.semi : true,
       ),
-      etaFormatHtml: formatterConfig.get<boolean>("formatHtml", true),
+      etaFormatHtml: formatterConfig.get<boolean>(
+        "formatHtml",
+        resolvedEtaFormatHtml(resolvedConfig) ?? true,
+      ),
     });
 
     if (formatted === document.getText()) {
+      lastShownErrorMessage = undefined;
       return [];
     }
 
+    lastShownErrorMessage = undefined;
     return [vscode.TextEdit.replace(fullDocumentRange(document), formatted)];
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    void vscode.window.showErrorMessage(`Eta formatting failed: ${message}`);
+    const target = document.uri.scheme === "file" ? document.uri.fsPath : document.uri.toString();
+    etaFormatterOutputChannel.appendLine(`[${new Date().toISOString()}] Formatting failed for ${target}`);
+    etaFormatterOutputChannel.appendLine(`Eta formatting failed: ${message}`);
+    if (error instanceof Error && error.stack) {
+      etaFormatterOutputChannel.appendLine(error.stack);
+    }
+    etaFormatterOutputChannel.appendLine("");
+
+    if (lastShownErrorMessage !== message) {
+      lastShownErrorMessage = message;
+      void vscode.window.showErrorMessage(`Eta formatting failed: ${message}`);
+    }
     return [];
   }
 }

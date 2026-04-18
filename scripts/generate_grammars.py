@@ -55,7 +55,7 @@ ETA_REPOSITORY = {
         "beginCaptures": {
             "0": {"name": "punctuation.definition.comment.js"},
         },
-        "end": r"(?=$)",
+        "end": rf"{ETA_CLOSE_LOOKAHEAD}|(?=$)",
     },
     "eta-js-template-string": {
         "name": "string.quoted.template.js",
@@ -162,7 +162,15 @@ ETA_REPOSITORY = {
         "name": "constant.language.js",
     },
     "eta-js-number": {
-        "match": r"(?<![_$[:alnum:]])(?:0[xX][0-9A-Fa-f]+|\d+(?:\.\d+)?)",
+        "match": (
+            r"(?<![_$[:alnum:]])(?:"
+            r"0[bB][01](?:_?[01])*n?|"
+            r"0[oO][0-7](?:_?[0-7])*n?|"
+            r"0[xX][0-9A-Fa-f](?:_?[0-9A-Fa-f])*n?|"
+            r"\d(?:_?\d)*n|"
+            r"(?:\d(?:_?\d)*\.\d(?:_?\d)*|\d(?:_?\d)*\.|\.\d(?:_?\d)*|\d(?:_?\d)*)(?:[eE][+-]?\d(?:_?\d)*)?"
+            r")"
+        ),
         "name": "constant.numeric.js",
     },
     "eta-js-identifier": {

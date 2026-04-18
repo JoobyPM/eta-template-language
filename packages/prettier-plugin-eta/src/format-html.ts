@@ -8,11 +8,40 @@ import {
 } from "./format-js.js";
 import type { EtaPluginOptions, TagNode, TemplateNode } from "./types.js";
 
-const SLOT_PREFIX = "__ETA_TAG_SLOT_";
-const SLOT_SUFFIX = "__";
+const SLOT_PREFIX = "ETATAGSLOT";
+const SLOT_SUFFIX = "TOKEN";
+let slotNonceCounter = 0;
 
-function slotToken(slot: number): string {
-  return `${SLOT_PREFIX}${slot}${SLOT_SUFFIX}`;
+function nextSlotNonce(source: string): string {
+  let nonce = "";
+
+  do {
+    nonce = `${SLOT_PREFIX}${(slotNonceCounter++).toString(36)}X`;
+  } while (source.includes(nonce));
+
+  return nonce;
+}
+
+function slotToken(slot: number, nonce: string): string {
+  return `${nonce}${slot}${SLOT_SUFFIX}`;
+}
+
+function buildSlotPattern(tokens: Iterable<string>): RegExp | null {
+  const escapedTokens = Array.from(tokens, (token) => token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (escapedTokens.length === 0) {
+    return null;
+  }
+
+  return new RegExp(escapedTokens.join("|"), "g");
+}
+
+function selectDocumentParser(options: EtaPluginOptions): "html" | "markdown" {
+  const filepath = options.filepath?.toLowerCase() ?? "";
+  if (filepath.endsWith(".md.eta") || filepath.endsWith(".markdown.eta")) {
+    return "markdown";
+  }
+
+  return "html";
 }
 
 function isTagNode(node: TemplateNode): node is TagNode {
@@ -74,7 +103,7 @@ async function formatTagNode(node: TagNode, options: EtaPluginOptions): Promise<
   return [open, indentBlock(formattedInner, options), close].join("\n");
 }
 
-async function formatHtmlPlaceholders(
+async function formatTextPlaceholders(
   source: string,
   options: EtaPluginOptions
 ): Promise<string> {
@@ -83,12 +112,14 @@ async function formatHtmlPlaceholders(
   }
 
   try {
+    const parser = selectDocumentParser(options);
     return await prettier.format(
       source,
       Object.fromEntries(
         Object.entries({
-          parser: "html",
+          parser,
           printWidth: options.printWidth,
+          proseWrap: parser === "markdown" ? options.proseWrap : undefined,
           tabWidth: options.tabWidth,
           useTabs: options.useTabs
         }).filter(([, value]) => value !== undefined)
@@ -99,8 +130,12 @@ async function formatHtmlPlaceholders(
   }
 }
 
-function replaceSlots(source: string, replacements: Map<string, string>): string {
-  return source.replace(/__ETA_TAG_SLOT_\d+__/g, (token, offset) => {
+function replaceSlots(source: string, replacements: Map<string, string>, slotPattern: RegExp | null): string {
+  if (!slotPattern) {
+    return source;
+  }
+
+  return source.replace(slotPattern, (token, offset) => {
     const replacement = replacements.get(token);
     if (!replacement) {
       return token;
@@ -126,13 +161,22 @@ export async function formatTemplateDocument(
   body: TemplateNode[],
   options: EtaPluginOptions
 ): Promise<string> {
+  const literalSource = body
+    .map((node) => {
+      if (isTagNode(node)) {
+        return "";
+      }
+      return node.value;
+    })
+    .join("");
+  const slotNonce = nextSlotNonce(literalSource);
   const replacements = new Map<string, string>();
   const placeholderSource = body
     .map((node) => {
       if (!isTagNode(node)) {
         return node.value;
       }
-      return slotToken(node.slot);
+      return slotToken(node.slot, slotNonce);
     })
     .join("");
 
@@ -140,10 +184,11 @@ export async function formatTemplateDocument(
     if (!isTagNode(node)) {
       continue;
     }
-    replacements.set(slotToken(node.slot), await formatTagNode(node, options));
+    replacements.set(slotToken(node.slot, slotNonce), await formatTagNode(node, options));
   }
 
-  const formattedHtml = await formatHtmlPlaceholders(placeholderSource, options);
-  const rendered = replaceSlots(formattedHtml, replacements);
+  const slotPattern = buildSlotPattern(replacements.keys());
+  const formattedText = await formatTextPlaceholders(placeholderSource, options);
+  const rendered = replaceSlots(formattedText, replacements, slotPattern);
   return rendered.endsWith("\n") ? rendered : `${rendered}\n`;
 }

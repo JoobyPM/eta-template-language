@@ -105,7 +105,7 @@
           "name": "punctuation.definition.comment.js"
         }
       },
-      "end": "(?=$)"
+      "end": "(?=(\\s*)(-|_)?(%>))|(?=$)"
     },
     "eta-js-template-string": {
       "name": "string.quoted.template.js",
@@ -266,7 +266,7 @@
       "name": "constant.language.js"
     },
     "eta-js-number": {
-      "match": "(?<![_$[:alnum:]])(?:0[xX][0-9A-Fa-f]+|\\d+(?:\\.\\d+)?)",
+      "match": "(?<![_$[:alnum:]])(?:0[bB][01](?:_?[01])*n?|0[oO][0-7](?:_?[0-7])*n?|0[xX][0-9A-Fa-f](?:_?[0-9A-Fa-f])*n?|\\d(?:_?\\d)*n|(?:\\d(?:_?\\d)*\\.\\d(?:_?\\d)*|\\d(?:_?\\d)*\\.|\\.\\d(?:_?\\d)*|\\d(?:_?\\d)*)(?:[eE][+-]?\\d(?:_?\\d)*)?)",
       "name": "constant.numeric.js"
     },
     "eta-js-identifier": {

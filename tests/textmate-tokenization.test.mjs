@@ -153,3 +153,22 @@ test("Eta comment tags get dedicated comment scopes", async () => {
   assert.ok(findToken(tokens, "%>", "punctuation.section.embedded.end.eta"));
   assert.ok(tokens.some((token) => token.text.includes("note") && token.scopes.includes("comment.block.eta")));
 });
+
+test("Eta line comments still yield to the tag close delimiter", async () => {
+  const registry = await createRegistry();
+  const grammar = await registry.loadGrammar("text.html.eta");
+  const tokens = tokenizeLine(grammar, "<% // note %>");
+
+  assert.ok(findToken(tokens, "//", "punctuation.definition.comment.js"));
+  assert.ok(findToken(tokens, "%>", "punctuation.section.embedded.end.eta"));
+});
+
+test("Eta number highlighting recognizes modern JavaScript numeric literals", async () => {
+  const registry = await createRegistry();
+  const grammar = await registry.loadGrammar("text.html.eta");
+  const tokens = tokenizeLine(grammar, "<%= .5 + 1e10 + 1.5e-3 + 0b10 + 0o77 + 0xFF + 123n + 1_000 %>");
+
+  for (const literal of [".5", "1e10", "1.5e-3", "0b10", "0o77", "0xFF", "123n", "1_000"]) {
+    assert.ok(findToken(tokens, literal, "constant.numeric.js"), `missing numeric token for ${literal}`);
+  }
+});

@@ -5,7 +5,7 @@ export const options: Record<string, SupportOption> = {
     type: "boolean",
     category: "Global",
     default: true,
-    description: "Format HTML regions between Eta tags with Prettier's HTML parser."
+    description: "Format non-Eta regions between Eta tags with Prettier's document parser."
   }
 };
 

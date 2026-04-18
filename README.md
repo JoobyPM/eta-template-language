@@ -1,6 +1,6 @@
 # Eta Template Language
 
-Eta language support plus a dedicated Prettier formatter for Cursor and VS Code compatible editors.
+Eta language support plus a dedicated Prettier formatter for Cursor and VS Code-compatible editors.
 
 ## Architecture
 
@@ -85,7 +85,7 @@ The publish workflow verifies that the tag version matches the package version b
 
 ## Formatter Scope
 
-Version `0.2.0` intentionally focuses on safe full-document formatting:
+The formatter intentionally focuses on safe full-document formatting:
 
 - Eta tag scanning is structure-aware instead of regex-based.
 - JavaScript inside execution and output tags is formatted with Prettier's JS parser.

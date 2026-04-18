@@ -1,7 +1,7 @@
 {
   "name": "eta-template-language",
   "displayName": "Eta Template Language",
-  "description": "Eta syntax highlighting and Prettier-backed formatting for Cursor and VS Code compatible editors.",
+  "description": "Eta syntax highlighting and Prettier-backed formatting for Cursor and VS Code-compatible editors.",
   "version": "0.2.0",
   "publisher": "local-dev",
   "license": "MIT",
@@ -111,8 +111,7 @@
     "test:syntax": "python3 scripts/generate_grammars.py && python3 tests/test_generated_grammars.py && python3 tests/test_syntax_patterns.py && node --test tests/textmate-tokenization.test.mjs"
   },
   "dependencies": {
-    "prettier": "^3.0.0",
-    "prettier-plugin-eta": "workspace:*"
+    "prettier": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

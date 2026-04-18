@@ -54,6 +54,48 @@ test("can skip html formatting while still formatting eta tags", async () => {
   assert.equal(result, "<div>  <%= foo %></div>\n");
 });
 
+test("preserves literal text that resembles a slot placeholder", async () => {
+  const result = await formatEta("<div>ETATAGSLOT0TOKEN <%= foo %></div>");
+  assert.equal(result, "<div>ETATAGSLOT0TOKEN <%= foo %></div>\n");
+});
+
+test("formats markdown eta templates with the markdown parser", async () => {
+  const source = [
+    "# Configuration",
+    "",
+    "> Auto-generated for <%=it.service%>",
+    "",
+    "| Key | Value |",
+    "| --- | --- |",
+    "<% for (const item of items) { %>",
+    "| <%=item.key%> | <%=item.value%> |",
+    "<% } %>"
+  ].join("\n");
+
+  const result = await formatEta(source, {
+    filepath: "/tmp/configuration.md.eta",
+    printWidth: 120,
+    proseWrap: "preserve"
+  });
+
+  assert.equal(
+    result,
+    [
+      "# Configuration",
+      "",
+      "> Auto-generated for <%= it.service %>",
+      "",
+      "| Key | Value |",
+      "| --- | ----- |",
+      "",
+      "<% for (const item of items) { %>",
+      "| <%= item.key %> | <%= item.value %> |",
+      "<% } %>",
+      ""
+    ].join("\n")
+  );
+});
+
 test("rejects malformed eta tags", async () => {
   await assert.rejects(() => formatEta("<% if (enabled) { "), /Unterminated Eta tag/);
 });
