@@ -108,7 +108,7 @@
     "package": "npm run build && npm run test && vsce package",
     "test": "npm run test:syntax && npm run test:plugin",
     "test:plugin": "npm run test --workspace prettier-plugin-eta",
-    "test:syntax": "python3 scripts/generate_grammars.py && python3 tests/test_generated_grammars.py && python3 tests/test_syntax_patterns.py"
+    "test:syntax": "python3 scripts/generate_grammars.py && python3 tests/test_generated_grammars.py && python3 tests/test_syntax_patterns.py && node --test tests/textmate-tokenization.test.mjs"
   },
   "dependencies": {
     "prettier": "^3.0.0",
@@ -118,6 +118,8 @@
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.85.0",
     "@vscode/vsce": "^3.6.2",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
   }
 }

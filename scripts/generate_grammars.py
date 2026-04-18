@@ -8,8 +8,179 @@ from copy import deepcopy
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+SCHEMA = "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json"
+ETA_CLOSE_LOOKAHEAD = r"(?=(\s*)(-|_)?(%>))"
 
 ETA_REPOSITORY = {
+    "eta-js-body": {
+        "begin": r"\G",
+        "end": ETA_CLOSE_LOOKAHEAD,
+        "name": "source.js.embedded.eta",
+        "patterns": [{"include": "#eta-js"}],
+    },
+    "eta-js": {
+        "patterns": [
+            {"include": "#eta-js-comment-block"},
+            {"include": "#eta-js-comment-line"},
+            {"include": "#eta-js-template-string"},
+            {"include": "#eta-js-string-single"},
+            {"include": "#eta-js-string-double"},
+            {"include": "#eta-js-curly-block"},
+            {"include": "#eta-js-curly-close"},
+            {"include": "#eta-js-paren-group"},
+            {"include": "#eta-js-bracket-group"},
+            {"include": "#eta-js-keyword"},
+            {"include": "#eta-js-constant"},
+            {"include": "#eta-js-number"},
+            {"include": "#eta-js-identifier"},
+            {"include": "#eta-js-accessor"},
+            {"include": "#eta-js-punctuation"},
+            {"include": "#eta-js-operator"},
+        ],
+    },
+    "eta-js-comment-block": {
+        "name": "comment.block.js",
+        "begin": r"/\*",
+        "beginCaptures": {
+            "0": {"name": "punctuation.definition.comment.js"},
+        },
+        "end": r"\*/",
+        "endCaptures": {
+            "0": {"name": "punctuation.definition.comment.js"},
+        },
+    },
+    "eta-js-comment-line": {
+        "name": "comment.line.double-slash.js",
+        "begin": r"//",
+        "beginCaptures": {
+            "0": {"name": "punctuation.definition.comment.js"},
+        },
+        "end": r"(?=$)",
+    },
+    "eta-js-template-string": {
+        "name": "string.quoted.template.js",
+        "begin": r"`",
+        "beginCaptures": {
+            "0": {"name": "punctuation.definition.string.begin.js"},
+        },
+        "end": r"`",
+        "endCaptures": {
+            "0": {"name": "punctuation.definition.string.end.js"},
+        },
+        "patterns": [
+            {"match": r"\\.", "name": "constant.character.escape.js"},
+            {"include": "#eta-js-template-interpolation"},
+        ],
+    },
+    "eta-js-template-interpolation": {
+        "name": "meta.template.expression.js",
+        "begin": r"\$\{",
+        "beginCaptures": {
+            "0": {"name": "punctuation.section.embedded.begin.js"},
+        },
+        "end": rf"(\}})|{ETA_CLOSE_LOOKAHEAD}",
+        "endCaptures": {
+            "1": {"name": "punctuation.section.embedded.end.js"},
+        },
+        "patterns": [{"include": "#eta-js"}],
+    },
+    "eta-js-string-single": {
+        "name": "string.quoted.single.js",
+        "begin": r"'",
+        "beginCaptures": {
+            "0": {"name": "punctuation.definition.string.begin.js"},
+        },
+        "end": r"'",
+        "endCaptures": {
+            "0": {"name": "punctuation.definition.string.end.js"},
+        },
+        "patterns": [{"match": r"\\.", "name": "constant.character.escape.js"}],
+    },
+    "eta-js-string-double": {
+        "name": "string.quoted.double.js",
+        "begin": r'"',
+        "beginCaptures": {
+            "0": {"name": "punctuation.definition.string.begin.js"},
+        },
+        "end": r'"',
+        "endCaptures": {
+            "0": {"name": "punctuation.definition.string.end.js"},
+        },
+        "patterns": [{"match": r"\\.", "name": "constant.character.escape.js"}],
+    },
+    "eta-js-curly-block": {
+        "name": "meta.embedded.block.eta.js.curly",
+        "begin": r"\{",
+        "beginCaptures": {
+            "0": {"name": "punctuation.section.block.begin.eta"},
+        },
+        "end": rf"(\}})|{ETA_CLOSE_LOOKAHEAD}",
+        "endCaptures": {
+            "1": {"name": "punctuation.section.block.end.eta"},
+        },
+        "patterns": [{"include": "#eta-js"}],
+    },
+    "eta-js-curly-close": {
+        "match": r"\}",
+        "name": "punctuation.section.block.end.eta",
+    },
+    "eta-js-paren-group": {
+        "name": "meta.group.parens.eta.js",
+        "begin": r"\(",
+        "beginCaptures": {
+            "0": {"name": "meta.brace.round.js"},
+        },
+        "end": rf"(\))|{ETA_CLOSE_LOOKAHEAD}",
+        "endCaptures": {
+            "1": {"name": "meta.brace.round.js"},
+        },
+        "patterns": [{"include": "#eta-js"}],
+    },
+    "eta-js-bracket-group": {
+        "name": "meta.group.brackets.eta.js",
+        "begin": r"\[",
+        "beginCaptures": {
+            "0": {"name": "meta.brace.square.js"},
+        },
+        "end": rf"(\])|{ETA_CLOSE_LOOKAHEAD}",
+        "endCaptures": {
+            "1": {"name": "meta.brace.square.js"},
+        },
+        "patterns": [{"include": "#eta-js"}],
+    },
+    "eta-js-keyword": {
+        "match": (
+            r"(?<![_$[:alnum:]])"
+            r"(?:async|await|break|case|catch|const|continue|default|do|else|finally|for|function|"
+            r"if|in|let|new|of|return|switch|throw|try|typeof|var|while)"
+            r"(?![_$[:alnum:]])"
+        ),
+        "name": "keyword.control.js",
+    },
+    "eta-js-constant": {
+        "match": r"(?<![_$[:alnum:]])(?:false|null|this|true|undefined)(?![_$[:alnum:]])",
+        "name": "constant.language.js",
+    },
+    "eta-js-number": {
+        "match": r"(?<![_$[:alnum:]])(?:0[xX][0-9A-Fa-f]+|\d+(?:\.\d+)?)",
+        "name": "constant.numeric.js",
+    },
+    "eta-js-identifier": {
+        "match": r"[_$[:alpha:]][_$[:alnum:]]*",
+        "name": "variable.other.readwrite.js",
+    },
+    "eta-js-accessor": {
+        "match": r"\.",
+        "name": "punctuation.accessor.js",
+    },
+    "eta-js-punctuation": {
+        "match": r"[,;]",
+        "name": "punctuation.separator.delimiter.js",
+    },
+    "eta-js-operator": {
+        "match": r"===|!==|=>|==|!=|<=|>=|\+\+|--|\|\||&&|\?\?|[+\-*/%?:=<>!&|~^]",
+        "name": "keyword.operator.js",
+    },
     "eta-output-escaped": {
         "name": "meta.embedded.block.eta.output.escaped",
         "begin": "(<%)(-|_)?(\\s*)(=)",
@@ -23,8 +194,7 @@ ETA_REPOSITORY = {
             "2": {"name": "keyword.operator.whitespace-control.eta"},
             "3": {"name": "punctuation.section.embedded.end.eta"},
         },
-        "contentName": "source.js.embedded.eta",
-        "patterns": [{"include": "source.js"}],
+        "patterns": [{"include": "#eta-js-body"}],
     },
     "eta-output-raw": {
         "name": "meta.embedded.block.eta.output.raw",
@@ -39,12 +209,26 @@ ETA_REPOSITORY = {
             "2": {"name": "keyword.operator.whitespace-control.eta"},
             "3": {"name": "punctuation.section.embedded.end.eta"},
         },
-        "contentName": "source.js.embedded.eta",
-        "patterns": [{"include": "source.js"}],
+        "patterns": [{"include": "#eta-js-body"}],
+    },
+    "eta-comment": {
+        "name": "meta.embedded.block.eta.comment",
+        "begin": "(<%)(-|_)?(\\s*)(#)",
+        "beginCaptures": {
+            "1": {"name": "punctuation.section.embedded.begin.eta"},
+            "2": {"name": "keyword.operator.whitespace-control.eta"},
+            "4": {"name": "keyword.operator.comment.eta"},
+        },
+        "end": "(\\s*)(-|_)?(%>)",
+        "endCaptures": {
+            "2": {"name": "keyword.operator.whitespace-control.eta"},
+            "3": {"name": "punctuation.section.embedded.end.eta"},
+        },
+        "contentName": "comment.block.eta",
     },
     "eta-exec": {
         "name": "meta.embedded.block.eta.code",
-        "begin": "(<%)(-|_)?(?!\\s*[=~])",
+        "begin": "(<%)(-|_)?(?!\\s*[=~#])",
         "beginCaptures": {
             "1": {"name": "punctuation.section.embedded.begin.eta"},
             "2": {"name": "keyword.operator.whitespace-control.eta"},
@@ -54,18 +238,13 @@ ETA_REPOSITORY = {
             "2": {"name": "keyword.operator.whitespace-control.eta"},
             "3": {"name": "punctuation.section.embedded.end.eta"},
         },
-        "contentName": "source.js.embedded.eta",
-        "patterns": [{"include": "source.js"}],
+        "patterns": [{"include": "#eta-js-body"}],
     },
 }
-
-SCHEMA = "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json"
-
 
 
 def write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2) + "\n")
-
 
 
 def build_main_grammar() -> dict:
@@ -76,12 +255,12 @@ def build_main_grammar() -> dict:
         "patterns": [
             {"include": "#eta-output-escaped"},
             {"include": "#eta-output-raw"},
+            {"include": "#eta-comment"},
             {"include": "#eta-exec"},
             {"include": "text.html.basic"},
         ],
         "repository": deepcopy(ETA_REPOSITORY),
     }
-
 
 
 def build_injection_grammar() -> dict:
@@ -94,11 +273,11 @@ def build_injection_grammar() -> dict:
         "patterns": [
             {"include": "#eta-output-escaped"},
             {"include": "#eta-output-raw"},
+            {"include": "#eta-comment"},
             {"include": "#eta-exec"},
         ],
         "repository": deepcopy(ETA_REPOSITORY),
     }
-
 
 
 def main() -> None:
