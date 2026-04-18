@@ -55,3 +55,11 @@ Open `samples/demo.eta` after installation for a quick smoke test.
 ## Project position
 
 This repository is an independent Eta language extension and intentionally contains no references to other Eta extension projects.
+
+## Validation
+
+Run the lightweight grammar checks:
+
+```bash
+python tests/test_syntax_patterns.py
+```

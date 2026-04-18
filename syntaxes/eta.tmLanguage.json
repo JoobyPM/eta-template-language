@@ -4,9 +4,6 @@
   "scopeName": "text.html.eta",
   "patterns": [
     {
-      "include": "text.html.basic"
-    },
-    {
       "include": "#eta-output-escaped"
     },
     {
@@ -14,6 +11,9 @@
     },
     {
       "include": "#eta-exec"
+    },
+    {
+      "include": "text.html.basic"
     }
   ],
   "repository": {
