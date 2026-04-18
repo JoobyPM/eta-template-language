@@ -89,7 +89,8 @@ def build_injection_grammar() -> dict:
         "$schema": SCHEMA,
         "name": "Eta (HTML injection)",
         "scopeName": "text.html.eta.injection",
-        "injectionSelector": "L:text.html.basic -comment -string",
+        # Eta tags must still be tokenized inside HTML attribute values.
+        "injectionSelector": "L:text.html.basic -comment",
         "patterns": [
             {"include": "#eta-output-escaped"},
             {"include": "#eta-output-raw"},

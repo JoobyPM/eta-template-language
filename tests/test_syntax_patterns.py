@@ -76,6 +76,14 @@ def run() -> None:
         for sample in END_CASES:
             assert end_pat.search(sample), f"end mismatch in {file}: {sample}"
 
+        if file.name == "eta.injection.tmLanguage.json":
+            selector = data["injectionSelector"]
+            assert "-comment" in selector, f"injection selector should still exclude HTML comments: {selector}"
+            assert "-string" not in selector, (
+                "injection selector must allow Eta tags inside HTML attribute strings; "
+                f"got: {selector}"
+            )
+
     print("syntax-pattern checks passed")
 
 

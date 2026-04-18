@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "Eta (HTML injection)",
   "scopeName": "text.html.eta.injection",
-  "injectionSelector": "L:text.html.basic -comment -string",
+  "injectionSelector": "L:text.html.basic -comment",
   "patterns": [
     {
       "include": "#eta-output-escaped"
