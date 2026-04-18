@@ -159,6 +159,16 @@ test("Eta injection inside HTML attribute strings stays balanced", async () => {
   assert.ok(findToken(tokens, "}", ETA_DELIMITER_SCOPE));
 });
 
+test("escaped output delimiters keep a shared Eta scope in attribute values", async () => {
+  const registry = await createRegistry();
+  const grammar = await registry.loadGrammar("text.html.eta");
+  const tokens = tokenizeLine(grammar, '            colspan="<%= it.tables.programmes.emptyColspan || 28 %>"');
+
+  assert.ok(findToken(tokens, "<%", ETA_DELIMITER_SCOPE));
+  assert.ok(findToken(tokens, "=", ETA_DELIMITER_SCOPE));
+  assert.ok(findToken(tokens, "%>", ETA_DELIMITER_SCOPE));
+});
+
 test("Eta comment tags get dedicated comment scopes", async () => {
   const registry = await createRegistry();
   const grammar = await registry.loadGrammar("text.html.eta");

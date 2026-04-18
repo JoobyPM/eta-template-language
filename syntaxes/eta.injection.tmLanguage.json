@@ -294,7 +294,7 @@
           "name": "keyword.operator.whitespace-control.eta"
         },
         "4": {
-          "name": "keyword.operator.output.escaped.eta"
+          "name": "punctuation.section.embedded.eta"
         }
       },
       "end": "(\\s*)(-|_)?(%>)",
@@ -323,7 +323,7 @@
           "name": "keyword.operator.whitespace-control.eta"
         },
         "4": {
-          "name": "keyword.operator.output.raw.eta"
+          "name": "punctuation.section.embedded.eta"
         }
       },
       "end": "(\\s*)(-|_)?(%>)",
@@ -352,7 +352,7 @@
           "name": "keyword.operator.whitespace-control.eta"
         },
         "4": {
-          "name": "keyword.operator.comment.eta"
+          "name": "punctuation.section.embedded.eta"
         }
       },
       "end": "(\\s*)(-|_)?(%>)",

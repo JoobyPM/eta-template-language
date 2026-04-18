@@ -56,12 +56,24 @@ test("packaged VSIX contains the bundled extension runtime", async (t) => {
       maxBuffer: 16 * 1024 * 1024
     })
   );
+  const packagedLanguageConfiguration = JSON.parse(
+    execFileSync("unzip", ["-p", vsixPath, "extension/language-configuration.json"], {
+      encoding: "utf8",
+      maxBuffer: 16 * 1024 * 1024
+    })
+  );
   assert.equal(packagedManifest.workspaces, undefined, "VSIX manifest should not expose workspace metadata");
   assert.equal(packagedManifest.publisher, manifest.publisher, "VSIX manifest should preserve the real publisher id");
   assert.notEqual(packagedManifest.publisher, "local-dev", "VSIX manifest should not ship a placeholder publisher");
   for (const grammar of packagedManifest.contributes.grammars ?? []) {
     assert.equal(grammar.embeddedLanguages, undefined, "VSIX grammars should not opt into embedded language semantic highlighting");
   }
+  assert.ok(
+    !(packagedLanguageConfiguration.brackets ?? []).some(
+      (pair) => Array.isArray(pair) && pair[0] === "{" && pair[1] === "}"
+    ),
+    "Eta language configuration should not colorize JavaScript braces as top-level editor brackets"
+  );
 
   const bundle = execFileSync("unzip", ["-p", vsixPath, "extension/dist/extension.js"], {
     encoding: "utf8",

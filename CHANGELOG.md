@@ -7,6 +7,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.7] - 2026-04-19
+
+### Changed
+
+- Unified `<%=`, `<%~`, and `<%#` opening delimiters under the shared Eta delimiter scope so attribute-valued output tags no longer pick up a separate operator color.
+- Removed `{}` from Eta top-level bracket colorization and surrounding-pair configuration so Cursor and VS Code no longer recolor JavaScript braces inside Eta tags as document-level bracket pairs.
+
 ## [0.2.6] - 2026-04-19
 
 ### Changed

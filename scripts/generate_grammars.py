@@ -197,7 +197,7 @@ ETA_REPOSITORY = {
         "beginCaptures": {
             "1": {"name": ETA_DELIMITER_SCOPE},
             "2": {"name": "keyword.operator.whitespace-control.eta"},
-            "4": {"name": "keyword.operator.output.escaped.eta"},
+            "4": {"name": ETA_DELIMITER_SCOPE},
         },
         "end": "(\\s*)(-|_)?(%>)",
         "endCaptures": {
@@ -212,7 +212,7 @@ ETA_REPOSITORY = {
         "beginCaptures": {
             "1": {"name": ETA_DELIMITER_SCOPE},
             "2": {"name": "keyword.operator.whitespace-control.eta"},
-            "4": {"name": "keyword.operator.output.raw.eta"},
+            "4": {"name": ETA_DELIMITER_SCOPE},
         },
         "end": "(\\s*)(-|_)?(%>)",
         "endCaptures": {
@@ -227,7 +227,7 @@ ETA_REPOSITORY = {
         "beginCaptures": {
             "1": {"name": ETA_DELIMITER_SCOPE},
             "2": {"name": "keyword.operator.whitespace-control.eta"},
-            "4": {"name": "keyword.operator.comment.eta"},
+            "4": {"name": ETA_DELIMITER_SCOPE},
         },
         "end": "(\\s*)(-|_)?(%>)",
         "endCaptures": {
