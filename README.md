@@ -1,28 +1,44 @@
 # Eta Template Language
 
-Language support for Eta templates in Cursor and VS Code compatible editors.
+Eta language support plus a dedicated Prettier formatter for Cursor and VS Code compatible editors.
 
-## Source-of-truth alignment
+## Architecture
 
-This grammar is aligned to Eta v4 parsing behavior from `src/parse.ts` in the `bgub/eta` repository:
+The repository now has two clear layers:
 
-- Open tag shape: `<%` + optional trim marker (`-` or `_`) + optional whitespace + optional prefix (`=` interpolate, `~` raw).
-- Close tag shape: optional whitespace + optional trim marker (`-` or `_`) + `%>`.
-- JS strings/comments/template literals are valid inside tags (delegated to `source.js`).
+- The root package remains the editor extension with grammar files, snippets, and a thin formatter wrapper.
+- `packages/prettier-plugin-eta` contains the reusable formatter core and Prettier plugin.
+
+The formatter uses a stateful Eta scanner rather than a regex. It safely walks Eta tags, understands JavaScript strings, comments, template literals, and regex literals inside tags, formats JS payloads with Prettier, formats surrounding HTML through placeholder-based document formatting, and then stitches the template back together while preserving trim markers.
 
 ## Features
 
 - Dedicated Eta language id (`eta`) with `.eta` file association.
 - HTML highlighting outside Eta tags.
 - Embedded JavaScript highlighting inside Eta tags.
-- Distinct grammar rules for escaped output (`<%=`), raw output (`<%~`), and execution tags (`<% ... %>`).
-- Whitespace-control delimiter markers (`-` and `_`) recognized on both opening and closing sides, including forms like `<%- = it.name -%>`.
+- Distinct grammar rules for escaped output (`<%=`), raw output (`<%~`), comments (`<%#`), and execution tags (`<% ... %>`).
+- Prettier-backed full document formatting for Eta templates.
+- Whitespace-control delimiter markers (`-` and `_`) recognized on both opening and closing sides.
 - Eta grammar injection for HTML files.
-- Auto-closing pairs for Eta delimiters.
+- Auto-closing pairs for Eta delimiters and a formatter entry point inside the extension.
 - Useful snippets for common Eta patterns.
 - Emmet support in Eta files via `eta -> html` mapping.
 
-## Install (local development)
+## Workspace Layout
+
+```text
+packages/prettier-plugin-eta/
+  src/
+  test/
+src/
+  extension.ts
+  formatter.ts
+syntaxes/
+language-configuration.json
+snippets/
+```
+
+## Local Development
 
 1. Install dependencies:
 
@@ -30,13 +46,34 @@ This grammar is aligned to Eta v4 parsing behavior from `src/parse.ts` in the `b
    npm install
    ```
 
-2. Build a VSIX package:
+2. Build the plugin and extension:
+
+   ```bash
+   npm run build
+   ```
+
+3. Run syntax and formatter tests:
+
+   ```bash
+   npm test
+   ```
+
+4. Build a VSIX package:
 
    ```bash
    npm run package
    ```
 
-3. In Cursor/VS Code, run **Extensions: Install from VSIX...** and choose the generated `.vsix`.
+5. In Cursor/VS Code, run **Extensions: Install from VSIX...** and choose the generated `.vsix`.
+
+## Formatter Scope
+
+Version `0.2.0` intentionally focuses on safe full-document formatting:
+
+- Eta tag scanning is structure-aware instead of regex-based.
+- JavaScript inside execution and output tags is formatted with Prettier's JS parser.
+- HTML around Eta tags is formatted with Prettier's HTML parser.
+- Range formatting is intentionally not implemented yet.
 
 ## Snippets
 
@@ -52,16 +89,10 @@ This grammar is aligned to Eta v4 parsing behavior from `src/parse.ts` in the `b
 
 Open `samples/demo.eta` after installation for a quick smoke test.
 
-## Project position
-
-This repository is an independent Eta language extension and intentionally contains no references to other Eta extension projects.
-
 ## Validation
 
-Run the lightweight grammar checks:
+Run the extension grammar checks plus plugin tests:
 
 ```bash
-python scripts/generate_grammars.py
-python tests/test_generated_grammars.py
-python tests/test_syntax_patterns.py
+npm test
 ```

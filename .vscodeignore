@@ -1,4 +1,13 @@
 .git/**
 .gitignore
+.gitkeep
 node_modules/**
+packages/prettier-plugin-eta/dist/test/**
+packages/prettier-plugin-eta/src/**
+packages/prettier-plugin-eta/test/**
+packages/prettier-plugin-eta/tsconfig.json
+scripts/**
+src/**
+tests/**
+tsconfig*.json
 samples/**
