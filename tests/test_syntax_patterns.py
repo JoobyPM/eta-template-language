@@ -62,7 +62,7 @@ def compile_pattern(repo: dict, key: str, field: str) -> re.Pattern[str]:
     return re.compile(raw)
 
 
-def run() -> None:
+def test_syntax_patterns_match_the_generator_contract() -> None:
     for file in GRAMMAR_FILES:
         data = json.loads(file.read_text())
         repo = data["repository"]
@@ -131,9 +131,6 @@ def run() -> None:
                 "injection selector must allow Eta tags inside HTML attribute strings; "
                 f"got: {selector}"
             )
-
-    print("syntax-pattern checks passed")
-
-
 if __name__ == "__main__":
-    run()
+    test_syntax_patterns_match_the_generator_contract()
+    print("syntax-pattern checks passed")

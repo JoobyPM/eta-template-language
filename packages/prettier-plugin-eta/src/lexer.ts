@@ -66,7 +66,10 @@ function scanStringLiteral(source: string, index: number, quote: "'" | "\""): nu
 
 function scanLineComment(source: string, index: number): number {
   let cursor = index + 2;
-  while (cursor < source.length && source[cursor] !== "\n") {
+  while (cursor < source.length) {
+    if (source[cursor] === "\n" || matchTagClose(source, cursor)) {
+      return cursor;
+    }
     cursor += 1;
   }
   return cursor;
@@ -413,10 +416,6 @@ export function lexTemplate(source: string): TemplateNode[] {
     nodes.push(read.tag);
     cursor = read.nextIndex;
     slot += 1;
-  }
-
-  if (source.length === 0) {
-    return [];
   }
 
   return nodes;

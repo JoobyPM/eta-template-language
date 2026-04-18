@@ -9,6 +9,8 @@ The repository now has two clear layers:
 - The root package remains the editor extension with grammar files, snippets, and a thin formatter wrapper.
 - `packages/prettier-plugin-eta` contains the reusable formatter core and Prettier plugin.
 
+The extension is bundled into a single runtime file for packaging. `prettier` and the Eta plugin are compiled into `dist/extension.js`, so the shipped VSIX does not depend on `node_modules` being present at runtime.
+
 The formatter uses a stateful Eta scanner rather than a regex. It safely walks Eta tags, understands JavaScript strings, comments, template literals, and regex literals inside tags, formats JS payloads with Prettier, formats surrounding HTML through placeholder-based document formatting, and then stitches the template back together while preserving trim markers.
 
 ## Features
@@ -52,13 +54,13 @@ snippets/
    npm run build
    ```
 
-3. Run syntax and formatter tests:
+3. Run type checks, syntax checks, plugin tests, and extension bundle checks:
 
    ```bash
    npm test
    ```
 
-4. Build a VSIX package:
+4. Build and validate a VSIX package:
 
    ```bash
    npm run package
@@ -68,12 +70,13 @@ snippets/
 
 ## CI And Release
 
-- `.github/workflows/ci.yml` runs the dedicated `prettier-plugin-eta` build/test job and then validates extension build, syntax checks, and VSIX packaging.
+- `.github/workflows/ci.yml` runs the dedicated `prettier-plugin-eta` build/test job and then validates the bundled extension runtime, syntax checks, VSIX packaging, and packaged artifact contents.
 - `.github/workflows/publish-prettier-plugin.yml` publishes `packages/prettier-plugin-eta` to npm through npm trusted publishing.
+- The repository now keeps the extension package and `prettier-plugin-eta` in lockstep version numbers. Update both package manifests together and record user-visible changes in `CHANGELOG.md`.
 
 To publish the Prettier plugin:
 
-1. Bump `packages/prettier-plugin-eta/package.json` to the version you want to release.
+1. Bump both `package.json` and `packages/prettier-plugin-eta/package.json` to the version you want to release.
 2. Configure npm trusted publishing for package `prettier-plugin-eta` with:
    - GitHub owner/user: `JoobyPM`
    - repository: `eta-template-language`
@@ -113,3 +116,8 @@ Run the extension grammar checks plus plugin tests:
 ```bash
 npm test
 ```
+
+## Project Docs
+
+- Contributor workflow and release expectations: [CONTRIBUTING.md](./CONTRIBUTING.md)
+- Release history: [CHANGELOG.md](./CHANGELOG.md)

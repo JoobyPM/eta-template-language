@@ -52,8 +52,13 @@ jobs:
       - name: Build extension
         run: npm run build
 
-      - name: Run syntax regression checks
-        run: npm run test:syntax
+      - name: Run extension runtime and syntax regression checks
+        run: |
+          npm run test:extension
+          npm run test:syntax
 
       - name: Package VSIX
         run: npx --no-install vsce package
+
+      - name: Verify packaged VSIX
+        run: node --test tests/vsix-package.test.mjs

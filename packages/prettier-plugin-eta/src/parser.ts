@@ -4,7 +4,7 @@ import type { EtaPluginOptions, TemplateProgram } from "./types.js";
 
 export async function parse(text: string, options: EtaPluginOptions): Promise<TemplateProgram> {
   const body = lexTemplate(text);
-  const formatted = await formatTemplateDocument(body, options);
+  const formatted = await formatTemplateDocument(body, options, text);
 
   return {
     type: "TemplateProgram",

@@ -2,7 +2,7 @@
   "name": "eta-template-language",
   "displayName": "Eta Template Language",
   "description": "Eta syntax highlighting and Prettier-backed formatting for Cursor and VS Code-compatible editors.",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "publisher": "local-dev",
   "license": "MIT",
   "engines": {
@@ -104,11 +104,14 @@
     }
   },
   "scripts": {
-    "build": "npm run build --workspace prettier-plugin-eta && tsc -p tsconfig.json",
-    "package": "npm run build && npm run test && vsce package",
-    "test": "npm run test:syntax && npm run test:plugin",
+    "build": "npm run build --workspace prettier-plugin-eta && npm run build:extension",
+    "build:extension": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && esbuild src/extension.ts --bundle --platform=node --format=cjs --target=node20 --external:vscode --outfile=dist/extension.js",
+    "package": "npm run build && npm run test && npx --no-install vsce package && node --test tests/vsix-package.test.mjs",
+    "test": "npm run typecheck && npm run test:syntax && npm run test:plugin && npm run test:extension",
+    "test:extension": "npm run build:extension && node --test tests/extension-bundle.test.mjs",
     "test:plugin": "npm run test --workspace prettier-plugin-eta",
-    "test:syntax": "python3 scripts/generate_grammars.py && python3 tests/test_generated_grammars.py && python3 tests/test_syntax_patterns.py && node --test tests/textmate-tokenization.test.mjs"
+    "test:syntax": "python3 scripts/generate_grammars.py && python3 tests/test_generated_grammars.py && python3 tests/test_syntax_patterns.py && node --test tests/textmate-tokenization.test.mjs",
+    "typecheck": "tsc -p tsconfig.json && tsc --noEmit -p packages/prettier-plugin-eta/tsconfig.json"
   },
   "dependencies": {
     "prettier": "^3.0.0"
@@ -117,6 +120,7 @@
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.85.0",
     "@vscode/vsce": "^3.6.2",
+    "esbuild": "^0.25.3",
     "typescript": "^5.0.0",
     "vscode-oniguruma": "^2.0.1",
     "vscode-textmate": "^9.3.2"
