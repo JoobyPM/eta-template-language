@@ -112,17 +112,17 @@ ETA_REPOSITORY = {
         "name": "meta.embedded.block.eta.js.curly",
         "begin": r"\{",
         "beginCaptures": {
-            "0": {"name": "punctuation.section.block.begin.eta"},
+            "0": {"name": "punctuation.section.embedded.begin.eta"},
         },
         "end": rf"(\}})|{ETA_CLOSE_LOOKAHEAD}",
         "endCaptures": {
-            "1": {"name": "punctuation.section.block.end.eta"},
+            "1": {"name": "punctuation.section.embedded.end.eta"},
         },
         "patterns": [{"include": "#eta-js"}],
     },
     "eta-js-curly-close": {
         "match": r"\}",
-        "name": "punctuation.section.block.end.eta",
+        "name": "punctuation.section.embedded.end.eta",
     },
     "eta-js-paren-group": {
         "name": "meta.group.parens.eta.js",

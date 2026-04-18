@@ -97,10 +97,10 @@ def run() -> None:
 
         assert curly_repo["begin"] == r"\{", f"curly begin mismatch in {file}"
         assert curly_repo["end"] == r"(\})|(?=(\s*)(-|_)?(%>))", f"curly end mismatch in {file}"
-        assert curly_repo["beginCaptures"]["0"]["name"] == "punctuation.section.block.begin.eta", (
+        assert curly_repo["beginCaptures"]["0"]["name"] == "punctuation.section.embedded.begin.eta", (
             f"curly begin scope mismatch in {file}"
         )
-        assert curly_repo["endCaptures"]["1"]["name"] == "punctuation.section.block.end.eta", (
+        assert curly_repo["endCaptures"]["1"]["name"] == "punctuation.section.embedded.end.eta", (
             f"curly end scope mismatch in {file}"
         )
 

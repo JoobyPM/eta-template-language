@@ -107,7 +107,7 @@ test("exec tags close cleanly after an opening block brace", async () => {
   const tokens = tokenizeLine(grammar, "<% if (it.extraClass) { %>");
 
   assert.ok(findToken(tokens, "<%", "punctuation.section.embedded.begin.eta"));
-  assert.ok(findToken(tokens, "{", "punctuation.section.block.begin.eta"));
+  assert.ok(findToken(tokens, "{", "punctuation.section.embedded.begin.eta"));
   assert.ok(findToken(tokens, "%>", "punctuation.section.embedded.end.eta"));
   assert.equal(countTokens(tokens, "%>", "punctuation.section.embedded.end.eta"), 1);
 });
@@ -117,7 +117,7 @@ test("standalone closing braces keep Eta punctuation scopes", async () => {
   const grammar = await registry.loadGrammar("text.html.eta");
   const tokens = tokenizeLine(grammar, "<% } %>");
 
-  assert.ok(findToken(tokens, "}", "punctuation.section.block.end.eta"));
+  assert.ok(findToken(tokens, "}", "punctuation.section.embedded.end.eta"));
   assert.ok(findToken(tokens, "%>", "punctuation.section.embedded.end.eta"));
 });
 
@@ -140,8 +140,8 @@ test("Eta injection inside HTML attribute strings stays balanced", async () => {
 
   assert.equal(countTokens(tokens, "<%", "punctuation.section.embedded.begin.eta"), 4);
   assert.equal(countTokens(tokens, "%>", "punctuation.section.embedded.end.eta"), 4);
-  assert.ok(findToken(tokens, "{", "punctuation.section.block.begin.eta"));
-  assert.ok(findToken(tokens, "}", "punctuation.section.block.end.eta"));
+  assert.ok(findToken(tokens, "{", "punctuation.section.embedded.begin.eta"));
+  assert.ok(findToken(tokens, "}", "punctuation.section.embedded.end.eta"));
 });
 
 test("Eta comment tags get dedicated comment scopes", async () => {
