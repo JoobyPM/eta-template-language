@@ -1,0 +1,27 @@
+{
+  "scopeName": "text.html.eta.injection",
+  "injectionSelector": "L:text.html.basic -comment -string",
+  "patterns": [
+    {
+      "name": "meta.embedded.block.eta",
+      "begin": "<%[-_]?",
+      "beginCaptures": {
+        "0": { "name": "punctuation.section.embedded.begin.eta" }
+      },
+      "end": "[-_]?%>",
+      "endCaptures": {
+        "0": { "name": "punctuation.section.embedded.end.eta" }
+      },
+      "patterns": [
+        {
+          "name": "keyword.operator.output.eta",
+          "match": "^(=|~)"
+        },
+        {
+          "include": "source.js"
+        }
+      ],
+      "contentName": "source.js.embedded.eta"
+    }
+  ]
+}
