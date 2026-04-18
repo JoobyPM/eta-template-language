@@ -33,8 +33,7 @@
     "dist/src"
   ],
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

@@ -69,15 +69,19 @@ snippets/
 ## CI And Release
 
 - `.github/workflows/ci.yml` runs the dedicated `prettier-plugin-eta` build/test job and then validates extension build, syntax checks, and VSIX packaging.
-- `.github/workflows/publish-prettier-plugin.yml` publishes `packages/prettier-plugin-eta` to npm.
+- `.github/workflows/publish-prettier-plugin.yml` publishes `packages/prettier-plugin-eta` to npm through npm trusted publishing.
 
 To publish the Prettier plugin:
 
 1. Bump `packages/prettier-plugin-eta/package.json` to the version you want to release.
-2. Push a git tag in the form `prettier-plugin-eta-v<version>`.
-3. Ensure the repository has an `NPM_TOKEN` Actions secret with publish access to the npm package.
+2. Configure npm trusted publishing for package `prettier-plugin-eta` with:
+   - GitHub owner/user: `JoobyPM`
+   - repository: `eta-template-language`
+   - workflow filename: `publish-prettier-plugin.yml`
+3. Push a git tag in the form `prettier-plugin-eta-v<version>`.
+4. Let GitHub Actions publish from that tag; no `NPM_TOKEN` secret is required for publishing.
 
-The publish workflow verifies that the tag version matches the package version before it runs `npm publish`.
+The publish workflow verifies that the tag version matches the package version before it runs `npm publish`. If the package later needs private npm dependencies during CI, add a separate read-only install token rather than a publish token.
 
 ## Formatter Scope
 
