@@ -105,7 +105,7 @@
   },
   "scripts": {
     "build": "npm run build --workspace prettier-plugin-eta && npm run build:extension",
-    "build:extension": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && esbuild src/extension.ts --bundle --platform=node --format=cjs --target=node20 --external:vscode --external:prettier --outfile=dist/extension.js",
+    "build:extension": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && esbuild src/extension.ts --bundle --platform=node --format=cjs --target=node18 --external:vscode --external:prettier --outfile=dist/extension.js",
     "package": "npm run build && npm run test && npx --no-install vsce package && node --test tests/vsix-package.test.mjs",
     "test": "npm run typecheck && npm run test:syntax && npm run test:plugin && npm run test:extension",
     "test:extension": "npm run build:extension && node --test tests/extension-bundle.test.mjs",

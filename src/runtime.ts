@@ -11,8 +11,9 @@ export async function resolveEtaPrettierConfig(filepath: string | undefined): Pr
 
   try {
     return (await prettier.resolveConfig(filepath)) ?? {};
-  } catch {
-    return {};
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to resolve Prettier config for ${filepath}: ${message}`);
   }
 }
 

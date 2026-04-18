@@ -95,6 +95,10 @@ The formatter intentionally focuses on safe full-document formatting:
 - HTML around Eta tags is formatted with Prettier's HTML parser.
 - Range formatting is intentionally not implemented yet.
 
+## Known Limitations
+
+- Prettier may reflow tagged templates such as `html\`...\`` inside Eta tags according to its own tagged-template heuristics. That behavior comes from Prettier's JavaScript formatter rather than the Eta parser.
+
 ## Snippets
 
 - `etaout` — escaped output

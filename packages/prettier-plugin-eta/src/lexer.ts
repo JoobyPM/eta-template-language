@@ -219,12 +219,10 @@ function scanJavaScript(
     }
     if (current === "/" && source.charAt(cursor + 1) === "/") {
       cursor = scanLineComment(source, cursor);
-      lastTokenCanEndExpression = false;
       continue;
     }
     if (current === "/" && source.charAt(cursor + 1) === "*") {
       cursor = scanBlockComment(source, cursor);
-      lastTokenCanEndExpression = false;
       continue;
     }
     if (current === "/" && !lastTokenCanEndExpression) {

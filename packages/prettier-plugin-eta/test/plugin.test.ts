@@ -147,6 +147,31 @@ test("keeps multiline execution arrays aligned without wrapper indentation drift
   );
 });
 
+test("dedents multiline expression fragments after formatting", async () => {
+  const result = await formatEta(
+    "<%= it.user.profile.name.toUpperCase().trim().replace('_', ' ') %>",
+    { printWidth: 40 }
+  );
+
+  assert.equal(
+    result,
+    [
+      "<%=",
+      "it.user.profile.name",
+      "  .toUpperCase()",
+      "  .trim()",
+      '  .replace("_", " ")',
+      "%>",
+      ""
+    ].join("\n")
+  );
+});
+
+test("preserves division after javascript comments inside eta tags", async () => {
+  const result = await formatEta("<%= total /* normalize */ / count %>");
+  assert.equal(result, "<%= total /* normalize */ / count %>\n");
+});
+
 test("formats markdown eta templates with the markdown parser", async () => {
   const source = [
     "# Configuration",

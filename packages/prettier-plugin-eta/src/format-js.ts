@@ -54,6 +54,14 @@ function dedentExtractedBlock(text: string): string {
     .join("\n");
 }
 
+function dedentWrappedExpression(text: string): string {
+  const normalized = text.replace(/\r\n?/g, "\n");
+  if (!normalized.startsWith("\n")) {
+    return trimOuterWhitespace(normalized);
+  }
+  return dedentExtractedBlock(normalized);
+}
+
 function createMarker(prefix: string): string {
   return `__ETA_${prefix}_${randomUUID().replace(/-/g, "")}__`;
 }
@@ -209,7 +217,7 @@ export async function formatExpressionSource(
       throw new Error("Unable to extract Eta expression from formatted wrapper.");
     }
 
-    return trimOuterWhitespace(formatted.slice(startIndex + prefix.length, endIndex));
+    return dedentWrappedExpression(formatted.slice(startIndex + prefix.length, endIndex));
   } catch (error) {
     logFormattingFailure("expression formatting failed", error);
     return normalized;
