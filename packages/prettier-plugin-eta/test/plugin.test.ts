@@ -432,6 +432,35 @@ test("does not split eta tags in html attributes at percent-close inside string 
   assert.equal(secondPass, result);
 });
 
+test("does not treat markdown lines with logical-or operators as table rows", async () => {
+  const source = [
+    "# Notes",
+    "",
+    "<% const value = left || right %>",
+    "| --- | --- |",
+    "| key | value |",
+    ""
+  ].join("\n");
+
+  const result = await formatEta(source, {
+    filepath: "/tmp/notes.md.eta",
+    printWidth: 120,
+    proseWrap: "preserve"
+  });
+
+  assert.equal(
+    result,
+    [
+      "# Notes",
+      "",
+      "<% const value = left || right; %>",
+      "| --- | --- |",
+      "| key | value |",
+      ""
+    ].join("\n")
+  );
+});
+
 test("preserves whitespace inside literals when formatting inline expressions", async () => {
   const result = await formatExpressionSourceInline('"a  b" || /x  y/.source || `c  d`', {
     printWidth: 120

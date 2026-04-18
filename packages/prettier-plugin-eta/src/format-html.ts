@@ -53,24 +53,6 @@ function replaceProtectedRegions(
   return source.replace(pattern, (token) => replacements.get(token) ?? token);
 }
 
-function detectNeighborIndentation(lines: string[], index: number): string {
-  for (let cursor = index + 1; cursor < lines.length; cursor += 1) {
-    const line = lines[cursor] ?? "";
-    if (line.trim()) {
-      return line.match(/^[\t ]*/)?.[0] ?? "";
-    }
-  }
-
-  for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
-    const line = lines[cursor] ?? "";
-    if (line.trim()) {
-      return line.match(/^[\t ]*/)?.[0] ?? "";
-    }
-  }
-
-  return "";
-}
-
 function restoreStandaloneTagLines(source: string, replacements: Map<string, string>): string {
   const tokens = Array.from(replacements.keys());
   if (tokens.length === 0) {
@@ -93,7 +75,8 @@ function restoreStandaloneTagLines(source: string, replacements: Map<string, str
         return line;
       }
 
-      const indentation = match[1] || detectNeighborIndentation(lines, index);
+      const indentation =
+        match[1] || findNeighborIndentation(lines, index, 1) || findNeighborIndentation(lines, index, -1);
       return `${indentation}${replacement}`;
     })
     .join("\n");
@@ -268,7 +251,7 @@ function isMarkdownFenceEnd(line: string, marker: "`" | "~", width: number): boo
 }
 
 function isTableRowLike(line: string): boolean {
-  return line.includes("|");
+  return /^\s*\|?(?:[^|\n]+\|){1,}[^|\n]+\|?\s*$/.test(line);
 }
 
 function isStandaloneEtaLine(line: string): boolean {
@@ -477,7 +460,7 @@ function findNeighborIndentation(lines: string[], index: number, direction: 1 | 
   return "";
 }
 
-function classifyStandaloneExecTag(line: string): "open" | "close" | null {
+function classifyStandaloneExecTag(line: string): "open" | "close" | "statement" | null {
   const trimmed = line.trim();
   if (!/^<%[-_]?(?!\s*[=~#]).*%>$/.test(trimmed)) {
     return null;
@@ -485,7 +468,10 @@ function classifyStandaloneExecTag(line: string): "open" | "close" | null {
   if (/^<%[-_]?\s*}/.test(trimmed)) {
     return "close";
   }
-  return "open";
+  if (/\{\s*[-_]?%>$/.test(trimmed)) {
+    return "open";
+  }
+  return "statement";
 }
 
 function normalizeStandaloneExecTagIndentation(source: string): string {
@@ -508,7 +494,9 @@ function normalizeStandaloneExecTagIndentation(source: string): string {
       let desiredIndentation =
         classification === "open"
           ? nextIndentation || currentIndentation || previousIndentation
-          : previousIndentation || currentIndentation || nextIndentation;
+          : classification === "statement"
+            ? currentIndentation || previousIndentation || nextIndentation
+            : previousIndentation || currentIndentation || nextIndentation;
 
       if (classification === "close") {
         const deeperNeighborWidths = [previousWidth, nextWidth].filter((width) => width > currentWidth);
