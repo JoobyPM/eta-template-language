@@ -61,5 +61,7 @@ This repository is an independent Eta language extension and intentionally conta
 Run the lightweight grammar checks:
 
 ```bash
+python scripts/generate_grammars.py
+python tests/test_generated_grammars.py
 python tests/test_syntax_patterns.py
 ```
