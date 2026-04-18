@@ -1,0 +1,50 @@
+name: Publish Prettier Plugin
+
+on:
+  push:
+    tags:
+      - "prettier-plugin-eta-v*"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Prettier plugin
+        run: npm run build --workspace prettier-plugin-eta
+
+      - name: Test Prettier plugin
+        run: npm test --workspace prettier-plugin-eta
+
+      - name: Verify tag matches package version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./packages/prettier-plugin-eta/package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#prettier-plugin-eta-v}"
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+            echo "Tag version $TAG_VERSION does not match prettier-plugin-eta version $PACKAGE_VERSION"
+            exit 1
+          fi
+
+      - name: Publish Prettier plugin to npm
+        run: npm publish --workspace prettier-plugin-eta --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

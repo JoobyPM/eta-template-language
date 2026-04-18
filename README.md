@@ -66,6 +66,19 @@ snippets/
 
 5. In Cursor/VS Code, run **Extensions: Install from VSIX...** and choose the generated `.vsix`.
 
+## CI And Release
+
+- `.github/workflows/ci.yml` runs the dedicated `prettier-plugin-eta` build/test job and then validates extension build, syntax checks, and VSIX packaging.
+- `.github/workflows/publish-prettier-plugin.yml` publishes `packages/prettier-plugin-eta` to npm.
+
+To publish the Prettier plugin:
+
+1. Bump `packages/prettier-plugin-eta/package.json` to the version you want to release.
+2. Push a git tag in the form `prettier-plugin-eta-v<version>`.
+3. Ensure the repository has an `NPM_TOKEN` Actions secret with publish access to the npm package.
+
+The publish workflow verifies that the tag version matches the package version before it runs `npm publish`.
+
 ## Formatter Scope
 
 Version `0.2.0` intentionally focuses on safe full-document formatting:
