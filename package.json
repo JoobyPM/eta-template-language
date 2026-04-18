@@ -2,7 +2,7 @@
   "name": "eta-template-language",
   "displayName": "Eta Template Language",
   "description": "Language support for Eta templates in Cursor and VS Code compatible editors.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "local-dev",
   "license": "MIT",
   "engines": {
@@ -17,13 +17,17 @@
     "html",
     "javascript"
   ],
-  "main": "./dist/extension.js",
   "contributes": {
     "languages": [
       {
         "id": "eta",
-        "aliases": ["Eta", "eta"],
-        "extensions": [".eta"],
+        "aliases": [
+          "Eta",
+          "eta"
+        ],
+        "extensions": [
+          ".eta"
+        ],
         "configuration": "./language-configuration.json"
       }
     ],
