@@ -59,6 +59,9 @@ test("packaged VSIX contains the bundled extension runtime", async (t) => {
   assert.equal(packagedManifest.workspaces, undefined, "VSIX manifest should not expose workspace metadata");
   assert.equal(packagedManifest.publisher, manifest.publisher, "VSIX manifest should preserve the real publisher id");
   assert.notEqual(packagedManifest.publisher, "local-dev", "VSIX manifest should not ship a placeholder publisher");
+  for (const grammar of packagedManifest.contributes.grammars ?? []) {
+    assert.equal(grammar.embeddedLanguages, undefined, "VSIX grammars should not opt into embedded language semantic highlighting");
+  }
 
   const bundle = execFileSync("unzip", ["-p", vsixPath, "extension/dist/extension.js"], {
     encoding: "utf8",

@@ -2,7 +2,7 @@
   "name": "eta-template-language",
   "displayName": "Eta Template Language",
   "description": "Eta syntax highlighting and Prettier-backed formatting for Cursor and VS Code-compatible editors.",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "publisher": "JoobyPM",
   "license": "MIT",
   "engines": {
@@ -53,20 +53,14 @@
       {
         "language": "eta",
         "scopeName": "text.html.eta",
-        "path": "./syntaxes/eta.tmLanguage.json",
-        "embeddedLanguages": {
-          "source.js.embedded.eta": "javascript"
-        }
+        "path": "./syntaxes/eta.tmLanguage.json"
       },
       {
         "scopeName": "text.html.eta.injection",
         "path": "./syntaxes/eta.injection.tmLanguage.json",
         "injectTo": [
           "text.html.basic"
-        ],
-        "embeddedLanguages": {
-          "source.js.embedded.eta": "javascript"
-        }
+        ]
       }
     ],
     "snippets": [

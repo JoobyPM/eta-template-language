@@ -11,12 +11,13 @@ ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json"
 ETA_CLOSE_LOOKAHEAD = r"(?=(\s*)(-|_)?(%>))"
 ETA_DELIMITER_SCOPE = "punctuation.section.embedded.eta"
+ETA_JS_BODY_SCOPE = "source.eta.embedded.javascript"
 
 ETA_REPOSITORY = {
     "eta-js-body": {
         "begin": r"\G",
         "end": ETA_CLOSE_LOOKAHEAD,
-        "name": "source.js.embedded.eta",
+        "name": ETA_JS_BODY_SCOPE,
         "patterns": [{"include": "#eta-js"}],
     },
     "eta-js": {

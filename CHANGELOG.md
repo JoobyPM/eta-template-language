@@ -7,6 +7,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.6] - 2026-04-19
+
+### Changed
+
+- Moved embedded Eta JavaScript bodies under an Eta-owned TextMate scope and stopped advertising them as embedded JavaScript languages in the extension manifest, preventing Cursor and VS Code from overriding Eta delimiter colors with JavaScript semantic highlighting.
+
 ## [0.2.5] - 2026-04-18
 
 ### Changed

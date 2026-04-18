@@ -23,7 +23,7 @@
     "eta-js-body": {
       "begin": "\\G",
       "end": "(?=(\\s*)(-|_)?(%>))",
-      "name": "source.js.embedded.eta",
+      "name": "source.eta.embedded.javascript",
       "patterns": [
         {
           "include": "#eta-js"
