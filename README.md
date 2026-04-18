@@ -9,7 +9,7 @@ The repository now has two clear layers:
 - The root package remains the editor extension with grammar files, snippets, and a thin formatter wrapper.
 - `packages/prettier-plugin-eta` contains the reusable formatter core and Prettier plugin.
 
-The extension is bundled into a single runtime file for packaging. `prettier` and the Eta plugin are compiled into `dist/extension.js`, so the shipped VSIX does not depend on `node_modules` being present at runtime.
+The extension is bundled into a single runtime file for packaging, and the VSIX ships `prettier` as an explicit production dependency. The Eta plugin code is compiled into `dist/extension.js`, while `prettier` is resolved from the packaged `node_modules/prettier` runtime.
 
 The formatter uses a stateful Eta scanner rather than a regex. It safely walks Eta tags, understands JavaScript strings, comments, template literals, and regex literals inside tags, formats JS payloads with Prettier, formats surrounding HTML through placeholder-based document formatting, and then stitches the template back together while preserving trim markers.
 

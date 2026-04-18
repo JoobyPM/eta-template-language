@@ -5,6 +5,8 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { assertBundledExtensionFormats } from "./extension-runtime-smoke.mjs";
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 async function readPackageVersion() {
@@ -20,7 +22,7 @@ test("packaged VSIX contains the bundled extension runtime", async () => {
     .filter(Boolean);
 
   assert.ok(entries.includes("extension/dist/extension.js"));
-  assert.ok(!entries.some((entry) => entry.includes("node_modules/prettier")));
+  assert.ok(entries.includes("extension/node_modules/prettier/package.json"));
   assert.ok(!entries.some((entry) => entry.includes("packages/prettier-plugin-eta/")));
   assert.ok(!entries.some((entry) => entry.includes(".github/workflows/")));
 
@@ -29,6 +31,26 @@ test("packaged VSIX contains the bundled extension runtime", async () => {
     maxBuffer: 16 * 1024 * 1024
   });
 
-  assert.doesNotMatch(bundle, /\brequire\((["'])prettier\1\)/);
   assert.doesNotMatch(bundle, /\bimport\((["'])prettier\1\)/);
+  assert.match(bundle, /\brequire\((["'])prettier\1\)/);
+});
+
+test("packaged VSIX bundle can load and format an Eta document", async () => {
+  const version = await readPackageVersion();
+  const vsixPath = path.join(ROOT, `eta-template-language-${version}.vsix`);
+  const tempBundlePath = path.join(ROOT, "dist", `vsix-extension-${version}.js`);
+
+  try {
+    await fs.writeFile(
+      tempBundlePath,
+      execFileSync("unzip", ["-p", vsixPath, "extension/dist/extension.js"], {
+        encoding: "utf8",
+        maxBuffer: 16 * 1024 * 1024
+      })
+    );
+
+    await assertBundledExtensionFormats(tempBundlePath);
+  } finally {
+    await fs.rm(tempBundlePath, { force: true });
+  }
 });

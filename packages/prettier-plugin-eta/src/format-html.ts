@@ -5,7 +5,8 @@ import * as prettier from "prettier";
 import {
   formatCommentSource,
   formatExecSource,
-  formatExpressionSource
+  formatExpressionSource,
+  logFormattingFailure
 } from "./format-js.js";
 import { buildPrettierOptions } from "./prettier-options.js";
 import type { EtaPluginOptions, TagNode, TemplateNode } from "./types.js";
@@ -51,6 +52,22 @@ function isProtectedWhitespaceNode(
   return isTagNode(previous) && isTagNode(next);
 }
 
+function isTrimSensitiveTextNode(
+  node: TemplateNode | undefined,
+  previous: TemplateNode | undefined,
+  next: TemplateNode | undefined
+): boolean {
+  if (node?.type !== "TextNode" || !node.value.includes("\n")) {
+    return false;
+  }
+
+  if (!isTagNode(previous) || !isTagNode(next)) {
+    return false;
+  }
+
+  return previous.rightTrim !== null || next.leftTrim !== null;
+}
+
 function buildOpenDelimiter(node: TagNode): string {
   const trim = node.leftTrim ?? "";
   switch (node.type) {
@@ -86,6 +103,9 @@ async function formatTagNode(node: TagNode, options: EtaPluginOptions): Promise<
   })();
 
   if (!formattedInner) {
+    if (node.type === "CommentTagNode") {
+      return `${open}${close}`;
+    }
     return close === "%>" ? `${open} %>` : `${open} ${close}`;
   }
 
@@ -114,7 +134,8 @@ async function formatTextPlaceholders(source: string, options: EtaPluginOptions)
       source,
       buildPrettierOptions(options, extraOptions)
     );
-  } catch {
+  } catch (error) {
+    logFormattingFailure("document placeholder formatting failed", error);
     return source;
   }
 }
@@ -184,7 +205,10 @@ export async function formatTemplateDocument(
       continue;
     }
 
-    if (isProtectedWhitespaceNode(node, body[index - 1], body[index + 1])) {
+    if (
+      isProtectedWhitespaceNode(node, body[index - 1], body[index + 1]) ||
+      isTrimSensitiveTextNode(node, body[index - 1], body[index + 1])
+    ) {
       const token = slotToken("WS", whitespaceSlot, slotNonce);
       whitespaceSlot += 1;
       placeholderParts.push(token);

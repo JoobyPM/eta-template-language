@@ -47,6 +47,11 @@ test("normalizes comment tag whitespace", async () => {
   assert.equal(result, "<%# keep this note %>\n");
 });
 
+test("preserves empty comment tags without inserting padding", async () => {
+  const result = await formatEta("<%#%>");
+  assert.equal(result, "<%#%>\n");
+});
+
 test("can skip html formatting while still formatting eta tags", async () => {
   const result = await formatEta("<div>  <%=foo%></div>", {
     etaFormatHtml: false
@@ -100,6 +105,48 @@ test("preserves adjacent tag line breaks", async () => {
   assert.equal(result, "<%# a comment %>\n<%= foo %>\n");
 });
 
+test("preserves trim-controlled content blocks across Eta tags", async () => {
+  const result = await formatEta("<%- if (x) { -%>\nhi\n<%- } -%>");
+  assert.equal(result, "<%- if (x) { -%>\nhi\n<%- } -%>\n");
+});
+
+test("dedents multiline execution blocks after formatting", async () => {
+  const result = await formatEta("<% const a = 1; const b = 2; const c = 3 %>", {
+    printWidth: 40
+  });
+
+  assert.equal(
+    result,
+    ["<%", "const a = 1;", "const b = 2;", "const c = 3;", "%>", ""].join("\n")
+  );
+});
+
+test("keeps multiline execution arrays aligned without wrapper indentation drift", async () => {
+  const result = await formatEta(
+    "<% someVeryLongArray = [firstValue, secondValue, thirdValue, fourthValue, fifthValue] %>",
+    {
+      printWidth: 40,
+      trailingComma: "all"
+    }
+  );
+
+  assert.equal(
+    result,
+    [
+      "<%",
+      "someVeryLongArray = [",
+      "  firstValue,",
+      "  secondValue,",
+      "  thirdValue,",
+      "  fourthValue,",
+      "  fifthValue,",
+      "];",
+      "%>",
+      ""
+    ].join("\n")
+  );
+});
+
 test("formats markdown eta templates with the markdown parser", async () => {
   const source = [
     "# Configuration",
@@ -147,12 +194,13 @@ test("remains idempotent across the sample eta corpus", async () => {
     "<% // note %>",
     "<% } else if (it.ready) { %>",
     "<% const value = { foo: [1, 2, 3] } %>",
+    "<% someVeryLongArray = [firstValue, secondValue, thirdValue, fourthValue, fifthValue] %>",
     "<div><%-=it.name-%></div>"
   ];
 
   for (const source of cases) {
-    const once = await formatEta(source, { trailingComma: "all" });
-    const twice = await formatEta(once, { trailingComma: "all" });
+    const once = await formatEta(source, { printWidth: 40, trailingComma: "all" });
+    const twice = await formatEta(once, { printWidth: 40, trailingComma: "all" });
     assert.equal(twice, once, `formatter should be idempotent for ${source}`);
   }
 });

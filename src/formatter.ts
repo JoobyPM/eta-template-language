@@ -6,26 +6,28 @@ export const etaFormatterOutputChannel = vscode.window.createOutputChannel("Eta 
 
 let lastShownErrorMessage: string | undefined;
 
+function pickBool(config: EtaFormatterConfig, key: string): boolean | undefined {
+  const value = (config as Record<string, unknown>)[key];
+  return typeof value === "boolean" ? value : undefined;
+}
+
+function pickEnum<const Values extends readonly string[]>(
+  config: EtaFormatterConfig,
+  key: string,
+  allowedValues: Values
+): Values[number] | undefined {
+  const value = (config as Record<string, unknown>)[key];
+  return typeof value === "string" && allowedValues.includes(value) ? (value as Values[number]) : undefined;
+}
+
+function pickNumber(config: EtaFormatterConfig, key: string): number | undefined {
+  const value = (config as Record<string, unknown>)[key];
+  return typeof value === "number" ? value : undefined;
+}
+
 function fullDocumentRange(document: vscode.TextDocument): vscode.Range {
   const end = document.positionAt(document.getText().length);
   return new vscode.Range(new vscode.Position(0, 0), end);
-}
-
-function resolvedEtaFormatHtml(config: EtaFormatterConfig): boolean | undefined {
-  const etaFormatHtml = (config as { etaFormatHtml?: unknown }).etaFormatHtml;
-  return typeof etaFormatHtml === "boolean" ? etaFormatHtml : undefined;
-}
-
-function resolvedTrailingComma(config: EtaFormatterConfig): "all" | "es5" | "none" | undefined {
-  const trailingComma = (config as { trailingComma?: unknown }).trailingComma;
-  return trailingComma === "all" || trailingComma === "es5" || trailingComma === "none"
-    ? trailingComma
-    : undefined;
-}
-
-function resolvedProseWrap(config: EtaFormatterConfig): "always" | "never" | "preserve" | undefined {
-  const proseWrap = (config as { proseWrap?: unknown }).proseWrap;
-  return proseWrap === "always" || proseWrap === "never" || proseWrap === "preserve" ? proseWrap : undefined;
 }
 
 function clampTabWidth(tabSize: number): number {
@@ -48,21 +50,21 @@ export async function provideEtaFormattingEdits(
       useTabs: !options.insertSpaces,
       printWidth: formatterConfig.get<number>(
         "printWidth",
-        typeof resolvedConfig.printWidth === "number" ? resolvedConfig.printWidth : 80
+        pickNumber(resolvedConfig, "printWidth") ?? 80
       ),
       singleQuote: formatterConfig.get<boolean>(
         "singleQuote",
-        typeof resolvedConfig.singleQuote === "boolean" ? resolvedConfig.singleQuote : false
+        pickBool(resolvedConfig, "singleQuote") ?? false
       ),
       semi: formatterConfig.get<boolean>(
         "semi",
-        typeof resolvedConfig.semi === "boolean" ? resolvedConfig.semi : true
+        pickBool(resolvedConfig, "semi") ?? true
       ),
-      trailingComma: resolvedTrailingComma(resolvedConfig),
-      proseWrap: resolvedProseWrap(resolvedConfig),
+      trailingComma: pickEnum(resolvedConfig, "trailingComma", ["all", "es5", "none"] as const),
+      proseWrap: pickEnum(resolvedConfig, "proseWrap", ["always", "never", "preserve"] as const),
       etaFormatHtml: formatterConfig.get<boolean>(
         "formatHtml",
-        resolvedEtaFormatHtml(resolvedConfig) ?? true
+        pickBool(resolvedConfig, "etaFormatHtml") ?? true
       )
     });
 

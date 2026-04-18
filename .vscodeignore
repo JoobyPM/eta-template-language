@@ -3,6 +3,8 @@
 .gitkeep
 .github/**
 node_modules/**
+!node_modules/prettier/
+!node_modules/prettier/**
 packages/prettier-plugin-eta/**
 scripts/**
 src/**

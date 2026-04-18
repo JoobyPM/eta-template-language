@@ -32,5 +32,6 @@ Current scope is safe full-document formatting for Eta templates:
 - formats surrounding HTML through Prettier's HTML parser
 - preserves Eta trim markers
 - handles `%>` inside JavaScript strings and template literals
+- honors standard Prettier options such as `printWidth`, `tabWidth`, `useTabs`, `singleQuote`, `semi`, `trailingComma`, and `proseWrap`
 
 Range formatting is intentionally out of scope for the plugin package.

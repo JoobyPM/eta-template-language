@@ -6,16 +6,32 @@ export function buildPrettierOptions(
   options: EtaPluginOptions,
   extras: Partial<prettier.Options> = {}
 ): prettier.Options {
-  return Object.fromEntries(
-    Object.entries({
-      printWidth: options.printWidth,
-      proseWrap: options.proseWrap,
-      semi: options.semi,
-      singleQuote: options.singleQuote,
-      tabWidth: options.tabWidth,
-      trailingComma: options.trailingComma,
-      useTabs: options.useTabs,
-      ...extras
-    }).filter(([, value]) => value !== undefined)
-  ) as prettier.Options;
+  const resolved: Partial<prettier.Options> = {};
+
+  if (options.printWidth !== undefined) {
+    resolved.printWidth = options.printWidth;
+  }
+  if (options.proseWrap !== undefined) {
+    resolved.proseWrap = options.proseWrap;
+  }
+  if (options.semi !== undefined) {
+    resolved.semi = options.semi;
+  }
+  if (options.singleQuote !== undefined) {
+    resolved.singleQuote = options.singleQuote;
+  }
+  if (options.tabWidth !== undefined) {
+    resolved.tabWidth = options.tabWidth;
+  }
+  if (options.trailingComma !== undefined) {
+    resolved.trailingComma = options.trailingComma;
+  }
+  if (options.useTabs !== undefined) {
+    resolved.useTabs = options.useTabs;
+  }
+
+  return {
+    ...resolved,
+    ...extras
+  };
 }

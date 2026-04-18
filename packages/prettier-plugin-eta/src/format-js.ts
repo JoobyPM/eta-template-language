@@ -16,10 +16,6 @@ function trimBlankLines(text: string): string {
   return lines.join("\n");
 }
 
-function normalizeSource(text: string): string {
-  return trimBlankLines(text);
-}
-
 function trimOuterWhitespace(text: string): string {
   let start = 0;
   while (start < text.length && /\s/.test(text[start] ?? "")) {
@@ -32,6 +28,30 @@ function trimOuterWhitespace(text: string): string {
   }
 
   return text.slice(start, end);
+}
+
+function dedentExtractedBlock(text: string): string {
+  const trimmed = trimBlankLines(text);
+  if (!trimmed.includes("\n")) {
+    return trimOuterWhitespace(trimmed);
+  }
+
+  const lines = trimmed.split("\n");
+  const indentationWidths = lines
+    .filter((line) => line.trim())
+    .map((line) => line.match(/^[\t ]*/)?.[0].length ?? 0);
+
+  const minIndentation = Math.min(...indentationWidths);
+  if (!Number.isFinite(minIndentation) || minIndentation <= 0) {
+    return trimmed;
+  }
+
+  return lines
+    .map((line) => {
+      const lineIndentation = line.match(/^[\t ]*/)?.[0].length ?? 0;
+      return line.slice(Math.min(minIndentation, lineIndentation));
+    })
+    .join("\n");
 }
 
 function createMarker(prefix: string): string {
@@ -53,7 +73,7 @@ function extractBetweenMarkers(formatted: string, startMarker: string, endMarker
     throw new Error(`Unable to locate Eta end marker for ${context}.`);
   }
 
-  return trimOuterWhitespace(formatted.slice(startIndex + startMarker.length, endIndex));
+  return dedentExtractedBlock(formatted.slice(startIndex + startMarker.length, endIndex));
 }
 
 function isOpenControlFragment(source: string): boolean {
@@ -68,7 +88,11 @@ function isCatchOrFinallyFragment(source: string): boolean {
   return /^}\s*(catch\b|finally\b)/.test(source);
 }
 
-function logFormattingFailure(context: string, error: unknown): void {
+function isCloseOnlyFragment(source: string): boolean {
+  return /^\s*}/.test(source);
+}
+
+export function logFormattingFailure(context: string, error: unknown): void {
   if (!process.env.ETA_DEBUG) {
     return;
   }
@@ -138,7 +162,7 @@ async function formatCatchOrFinallyFragment(
 }
 
 export async function formatExecSource(source: string, options: EtaPluginOptions): Promise<string> {
-  const normalized = normalizeSource(source);
+  const normalized = trimBlankLines(source);
   if (!normalized) {
     return "";
   }
@@ -150,23 +174,14 @@ export async function formatExecSource(source: string, options: EtaPluginOptions
     if (isCatchOrFinallyFragment(normalized)) {
       return await formatCatchOrFinallyFragment(normalized, options);
     }
+    if (isCloseOnlyFragment(normalized)) {
+      return normalized;
+    }
     if (isOpenControlFragment(normalized)) {
       return await formatOpenControlFragment(normalized, options);
     }
 
-    const startMarker = createCommentMarker("EXEC_START");
-    const endMarker = createCommentMarker("EXEC_END");
-    const wrapped = [
-      "async function __eta_exec__() {",
-      startMarker,
-      normalized,
-      endMarker,
-      "}",
-      ""
-    ].join("\n");
-
-    const formatted = await formatWithParser(wrapped, options);
-    return extractBetweenMarkers(formatted, startMarker, endMarker, "Eta execution block");
+    return trimBlankLines(await formatWithParser(`${normalized}\n`, options));
   } catch (error) {
     logFormattingFailure("execution block formatting failed", error);
     return normalized;
@@ -177,7 +192,7 @@ export async function formatExpressionSource(
   source: string,
   options: EtaPluginOptions
 ): Promise<string> {
-  const normalized = normalizeSource(source);
+  const normalized = trimBlankLines(source);
   if (!normalized) {
     return "";
   }

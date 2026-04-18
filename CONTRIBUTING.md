@@ -66,7 +66,7 @@ When changing formatter behavior:
 
 ## Extension Packaging
 
-The extension is bundled into `dist/extension.js`. Do not reintroduce runtime imports that depend on packaged `node_modules`.
+The extension is bundled into `dist/extension.js`. The VSIX also ships `node_modules/prettier` as an explicit runtime dependency, so avoid dynamic loading tricks and keep runtime dependencies intentional and test-covered.
 
 If you touch extension runtime loading:
 

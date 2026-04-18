@@ -14,7 +14,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
-- Bundled the extension runtime so the shipped VSIX no longer relies on `node_modules` at runtime.
+- Bundled the extension runtime while shipping `prettier` as an explicit packaged dependency in the VSIX, avoiding dynamic module loading and unreliable full-Prettier bundling.
 - Moved the extension and `prettier-plugin-eta` package versions back into lockstep.
 - Exposed Python grammar checks as standard `test_...` functions so they can run under either direct `python3` execution or `pytest`.
 
