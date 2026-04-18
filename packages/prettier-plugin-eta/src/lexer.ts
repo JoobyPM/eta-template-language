@@ -275,6 +275,12 @@ function scanJavaScript(
       lastTokenCanEndExpression = false;
       continue;
     }
+    if ((current === "+" || current === "-") && source.charAt(cursor + 1) === current) {
+      const isPostfixOperator = lastTokenCanEndExpression;
+      cursor += 2;
+      lastTokenCanEndExpression = isPostfixOperator;
+      continue;
+    }
 
     cursor += 1;
     lastTokenCanEndExpression = false;

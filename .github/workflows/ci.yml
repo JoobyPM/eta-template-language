@@ -58,7 +58,7 @@ jobs:
           npm run test:syntax
 
       - name: Package VSIX
-        run: npx --no-install vsce package
+        run: node scripts/package_extension.mjs
 
       - name: Verify packaged VSIX
         run: node --test tests/vsix-package.test.mjs

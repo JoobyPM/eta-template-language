@@ -65,6 +65,9 @@ def compile_pattern(repo: dict, key: str, field: str) -> re.Pattern[str]:
 def test_syntax_patterns_match_the_generator_contract() -> None:
     parsed_grammars = [(file, json.loads(file.read_text())) for file in GRAMMAR_FILES]
     shared_repo = parsed_grammars[0][1]["repository"]
+    for file, data in parsed_grammars[1:]:
+        assert data["repository"] == shared_repo, f"repository mismatch in {file}"
+
     curly_repo = shared_repo["eta-js-curly-block"]
     js_body = shared_repo["eta-js-body"]
     js_repo = shared_repo["eta-js"]

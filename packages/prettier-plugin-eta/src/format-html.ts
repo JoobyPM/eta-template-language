@@ -147,7 +147,7 @@ function replaceSlots(source: string, replacements: Map<string, string>, slotPat
 
   return source.replace(slotPattern, (token, offset) => {
     const replacement = replacements.get(token);
-    if (!replacement) {
+    if (replacement === undefined) {
       return token;
     }
     if (!replacement.includes("\n")) {

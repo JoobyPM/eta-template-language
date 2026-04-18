@@ -9,17 +9,18 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 export async function assertBundledExtensionFormats(bundlePath) {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "eta-extension-smoke-"));
-  const vscodeModuleDir = path.join(tempDir, "node_modules", "vscode");
-  const prettierModuleDir = path.join(tempDir, "node_modules", "prettier");
-  await fs.mkdir(vscodeModuleDir, { recursive: true });
   try {
-    await fs.symlink(path.join(ROOT, "node_modules", "prettier"), prettierModuleDir, "dir");
-  } catch {
-    await fs.cp(path.join(ROOT, "node_modules", "prettier"), prettierModuleDir, { recursive: true });
-  }
-  await fs.writeFile(
-    path.join(vscodeModuleDir, "index.js"),
-    `
+    const vscodeModuleDir = path.join(tempDir, "node_modules", "vscode");
+    const prettierModuleDir = path.join(tempDir, "node_modules", "prettier");
+    await fs.mkdir(vscodeModuleDir, { recursive: true });
+    try {
+      await fs.symlink(path.join(ROOT, "node_modules", "prettier"), prettierModuleDir, "dir");
+    } catch {
+      await fs.cp(path.join(ROOT, "node_modules", "prettier"), prettierModuleDir, { recursive: true });
+    }
+    await fs.writeFile(
+      path.join(vscodeModuleDir, "index.js"),
+      `
 let registeredProvider;
 
 class Position {
@@ -79,42 +80,45 @@ module.exports = {
   TextEdit
 };
 `
-  );
+    );
 
-  const tempBundlePath = path.join(tempDir, "extension.js");
-  await fs.copyFile(bundlePath, tempBundlePath);
+    const tempBundlePath = path.join(tempDir, "extension.js");
+    await fs.copyFile(bundlePath, tempBundlePath);
 
-  const require = createRequire(path.join(tempDir, "index.cjs"));
-  const vscode = require("vscode");
-  const extension = require(tempBundlePath);
+    const require = createRequire(path.join(tempDir, "index.cjs"));
+    const vscode = require("vscode");
+    const extension = require(tempBundlePath);
 
-  extension.activate({ subscriptions: [] });
-  const provider = vscode.__getRegisteredProvider();
+    extension.activate({ subscriptions: [] });
+    const provider = vscode.__getRegisteredProvider();
 
-  assert.ok(provider, "extension should register a document formatting provider");
+    assert.ok(provider, "extension should register a document formatting provider");
 
-  const source = "<div><%=foo +bar%></div>";
-  const document = {
-    uri: {
-      scheme: "file",
-      fsPath: path.join(tempDir, "sample.eta"),
-      toString() {
-        return this.fsPath;
+    const source = "<div><%=foo +bar%></div>";
+    const document = {
+      uri: {
+        scheme: "file",
+        fsPath: path.join(tempDir, "sample.eta"),
+        toString() {
+          return this.fsPath;
+        }
+      },
+      getText() {
+        return source;
+      },
+      positionAt(offset) {
+        return new vscode.Position(0, offset);
       }
-    },
-    getText() {
-      return source;
-    },
-    positionAt(offset) {
-      return new vscode.Position(0, offset);
-    }
-  };
+    };
 
-  const edits = await provider.provideDocumentFormattingEdits(document, {
-    tabSize: 2,
-    insertSpaces: true
-  });
+    const edits = await provider.provideDocumentFormattingEdits(document, {
+      tabSize: 2,
+      insertSpaces: true
+    });
 
-  assert.equal(edits.length, 1);
-  assert.equal(edits[0]?.newText, "<div><%= foo + bar %></div>\n");
+    assert.equal(edits.length, 1);
+    assert.equal(edits[0]?.newText, "<div><%= foo + bar %></div>\n");
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
 }

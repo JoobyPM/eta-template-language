@@ -51,11 +51,21 @@ test("packaged VSIX contains the bundled extension runtime", async (t) => {
     "VSIX should not package GitHub workflow files"
   );
 
+  const packagedManifest = JSON.parse(
+    execFileSync("unzip", ["-p", vsixPath, "extension/package.json"], {
+      encoding: "utf8",
+      maxBuffer: 16 * 1024 * 1024
+    })
+  );
+  assert.equal(packagedManifest.workspaces, undefined, "VSIX manifest should not expose workspace metadata");
+
   const bundle = execFileSync("unzip", ["-p", vsixPath, "extension/dist/extension.js"], {
     encoding: "utf8",
     maxBuffer: 16 * 1024 * 1024
   });
 
+  // The packaged VSIX intentionally ships prettier as an explicit runtime dependency.
+  // This bundle must therefore use a stable static require, not a dynamic import path.
   assert.doesNotMatch(bundle, /\bimport\((["'])prettier\1\)/);
   assert.match(bundle, /\brequire\((["'])prettier\1\)/);
 });

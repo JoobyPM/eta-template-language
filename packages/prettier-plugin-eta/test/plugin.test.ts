@@ -172,6 +172,21 @@ test("preserves division after javascript comments inside eta tags", async () =>
   assert.equal(result, "<%= total /* normalize */ / count %>\n");
 });
 
+test("preserves postfix increment expressions before division inside eta tags", async () => {
+  const result = await formatEta("<%= x++ / 2 %>");
+  assert.equal(result, "<%= x++ / 2 %>\n");
+});
+
+test("preserves postfix decrement statements before division inside eta tags", async () => {
+  const result = await formatEta("<% let y = x-- / 2; %>");
+  assert.equal(result, "<% let y = x-- / 2; %>\n");
+});
+
+test("extracts wrapped expressions without depending on the last semicolon in the document", async () => {
+  const result = await formatEta("<%= foo /* trailing ; */ %>");
+  assert.equal(result, "<%= foo /* trailing ; */ %>\n");
+});
+
 test("formats markdown eta templates with the markdown parser", async () => {
   const source = [
     "# Configuration",

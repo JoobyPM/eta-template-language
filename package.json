@@ -82,22 +82,26 @@
         "etaFormatter.formatHtml": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "markdownDescription": "Format HTML regions around Eta tags with Prettier's HTML parser."
         },
         "etaFormatter.printWidth": {
           "type": "integer",
           "default": 80,
           "minimum": 40,
+          "scope": "resource",
           "markdownDescription": "Preferred maximum line width for Eta formatting."
         },
         "etaFormatter.singleQuote": {
           "type": "boolean",
           "default": false,
+          "scope": "resource",
           "markdownDescription": "Use single quotes when Prettier formats JavaScript inside Eta tags."
         },
         "etaFormatter.semi": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "markdownDescription": "Print semicolons when Prettier formats JavaScript inside Eta tags."
         }
       }
@@ -106,7 +110,7 @@
   "scripts": {
     "build": "npm run build --workspace prettier-plugin-eta && npm run build:extension",
     "build:extension": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && esbuild src/extension.ts --bundle --platform=node --format=cjs --target=node18 --external:vscode --external:prettier --outfile=dist/extension.js",
-    "package": "npm run build && npm run test && npx --no-install vsce package && node --test tests/vsix-package.test.mjs",
+    "package": "npm run build && npm run test && node scripts/package_extension.mjs && node --test tests/vsix-package.test.mjs",
     "test": "npm run typecheck && npm run test:syntax && npm run test:plugin && npm run test:extension",
     "test:extension": "npm run build:extension && node --test tests/extension-bundle.test.mjs",
     "test:plugin": "npm run test --workspace prettier-plugin-eta",

@@ -41,7 +41,7 @@ function dedentExtractedBlock(text: string): string {
     .filter((line) => line.trim())
     .map((line) => line.match(/^[\t ]*/)?.[0].length ?? 0);
 
-  const minIndentation = Math.min(...indentationWidths);
+  const minIndentation = indentationWidths.reduce((currentMinimum, width) => Math.min(currentMinimum, width), Infinity);
   if (!Number.isFinite(minIndentation) || minIndentation <= 0) {
     return trimmed;
   }
@@ -206,18 +206,20 @@ export async function formatExpressionSource(
   }
 
   const binding = createMarker("EXPR_BINDING");
+  const endMarker = createCommentMarker("EXPR_END");
   const prefix = `const ${binding} =`;
-  const wrapped = [`${prefix} (${normalized});`, ""].join("\n");
+  const wrapped = [`${prefix} (${normalized});`, endMarker, ""].join("\n");
 
   try {
     const formatted = await formatWithParser(wrapped, options);
     const startIndex = formatted.indexOf(prefix);
-    const endIndex = formatted.trimEnd().lastIndexOf(";");
-    if (startIndex === -1 || endIndex <= startIndex) {
+    const endMarkerIndex = formatted.indexOf(endMarker, startIndex + prefix.length);
+    if (startIndex === -1 || endMarkerIndex <= startIndex) {
       throw new Error("Unable to extract Eta expression from formatted wrapper.");
     }
 
-    return dedentWrappedExpression(formatted.slice(startIndex + prefix.length, endIndex));
+    const extracted = formatted.slice(startIndex + prefix.length, endMarkerIndex).replace(/;\s*$/, "");
+    return dedentWrappedExpression(extracted);
   } catch (error) {
     logFormattingFailure("expression formatting failed", error);
     return normalized;

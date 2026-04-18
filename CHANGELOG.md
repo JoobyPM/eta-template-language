@@ -7,6 +7,23 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+
+- Added staged VSIX packaging that emits a stripped extension manifest and verifies the packaged manifest does not expose workspace metadata.
+
+### Changed
+
+- Marked Eta formatter settings as resource-scoped so folder and file overrides work correctly in multi-root workspaces.
+- Documented Prettier-upgrade sensitivity for exact-output formatter tests and the staged extension packaging flow.
+
+### Fixed
+
+- Fixed postfix `++` and `--` handling in the Eta lexer so division after increment or decrement is no longer misread as a regex literal.
+- Hardened Eta expression extraction against wrapper-tail semicolon assumptions without perturbing Prettier layout decisions.
+- Stopped conflating missing slot replacements with empty-string replacements in HTML/Markdown placeholder stitching.
+- Cleaned up temporary directories created by extension runtime smoke tests.
+- Hardened grammar contract tests so both generated repositories are checked for structural equality before shared assertions run.
+
 ## [0.2.3] - 2026-04-18
 
 ### Added

@@ -63,10 +63,11 @@ When changing formatter behavior:
 - verify idempotence for the affected cases
 - check both HTML-flavored `.eta` templates and Markdown-flavored `.md.eta` / `.markdown.eta` templates
 - keep user Prettier settings as the source of truth unless there is a documented Eta-specific override
+- exact-output assertions are sensitive to Prettier upgrades; when bumping `prettier`, rerun the plugin test suite and review any expectations that hard-code wrapped JS or Markdown output before updating snapshots or strings
 
 ## Extension Packaging
 
-The extension is bundled into `dist/extension.js`. The VSIX also ships `node_modules/prettier` as an explicit runtime dependency, so avoid dynamic loading tricks and keep runtime dependencies intentional and test-covered.
+The extension is bundled into `dist/extension.js`. The VSIX also ships `node_modules/prettier` as an explicit runtime dependency, so avoid dynamic loading tricks and keep runtime dependencies intentional and test-covered. `npm run package` stages a stripped extension manifest before invoking `vsce`, which keeps monorepo workspace metadata out of the shipped package.
 
 If you touch extension runtime loading:
 
