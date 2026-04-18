@@ -7,6 +7,7 @@ import {
   formatExecSource,
   formatExpressionSource,
   formatExpressionSourceInline,
+  indentationUnit,
   logFormattingFailure
 } from "./format-js.js";
 import { buildPrettierOptions } from "./prettier-options.js";
@@ -468,6 +469,183 @@ function normalizeStandaloneExecTagIndentation(source: string): string {
     .join("\n");
 }
 
+function scanQuotedAttributeValue(source: string, index: number): number {
+  const quote = source[index];
+  if (quote !== '"' && quote !== "'") {
+    return index;
+  }
+
+  let cursor = index + 1;
+  while (cursor < source.length) {
+    const current = source[cursor];
+    if (current === "\\") {
+      cursor += 2;
+      continue;
+    }
+    if (current === quote) {
+      return cursor + 1;
+    }
+    cursor += 1;
+  }
+
+  return source.length;
+}
+
+function scanEtaTagInHtmlText(source: string, index: number): number {
+  const end = source.indexOf("%>", index + 2);
+  return end === -1 ? source.length : end + 2;
+}
+
+function findOpeningTagClose(source: string): number {
+  let cursor = 0;
+  while (cursor < source.length) {
+    if (source.startsWith("<%", cursor)) {
+      cursor = scanEtaTagInHtmlText(source, cursor);
+      continue;
+    }
+
+    const current = source[cursor];
+    if (current === '"' || current === "'") {
+      cursor = scanQuotedAttributeValue(source, cursor);
+      continue;
+    }
+
+    if (current === ">") {
+      return cursor;
+    }
+
+    cursor += 1;
+  }
+
+  return -1;
+}
+
+function findTagNameEnd(source: string): number {
+  let cursor = 1;
+  while (cursor < source.length && /[A-Za-z0-9:-]/.test(source[cursor] ?? "")) {
+    cursor += 1;
+  }
+  return cursor;
+}
+
+function isCloseLikeEtaTag(token: string): boolean {
+  return /^<%[-_]?\s*}/.test(token);
+}
+
+function consumeAttributeChunk(source: string, start: number): { end: number; value: string } {
+  let cursor = start;
+  let chunk = "";
+
+  if (source.startsWith("<%", cursor)) {
+    const prefixEnd = scanEtaTagInHtmlText(source, cursor);
+    chunk += source.slice(cursor, prefixEnd);
+    cursor = prefixEnd;
+
+    while (cursor < source.length && /\s/.test(source[cursor] ?? "")) {
+      chunk += source[cursor];
+      cursor += 1;
+    }
+  }
+
+  while (cursor < source.length) {
+    if (source.startsWith("<%", cursor)) {
+      const etaEnd = scanEtaTagInHtmlText(source, cursor);
+      const etaToken = source.slice(cursor, etaEnd);
+      if (chunk && !isCloseLikeEtaTag(etaToken)) {
+        break;
+      }
+      chunk += etaToken;
+      cursor = etaEnd;
+      continue;
+    }
+
+    const current = source[cursor];
+    if (current === '"' || current === "'") {
+      const quotedEnd = scanQuotedAttributeValue(source, cursor);
+      chunk += source.slice(cursor, quotedEnd);
+      cursor = quotedEnd;
+      continue;
+    }
+
+    if (/\s/.test(current ?? "")) {
+      break;
+    }
+
+    chunk += current;
+    cursor += 1;
+  }
+
+  return {
+    end: cursor,
+    value: chunk.trim()
+  };
+}
+
+function wrapLongEmbeddedHtmlTagLines(source: string, options: EtaPluginOptions): string {
+  const printWidth = options.printWidth ?? 80;
+  const indent = indentationUnit(options);
+
+  return source
+    .split("\n")
+    .map((line) => {
+      if (line.length <= printWidth || !line.includes("<%")) {
+        return line;
+      }
+      if (!/^[\t ]*<[A-Za-z]/.test(line)) {
+        return line;
+      }
+
+      const lineIndentation = leadingIndentation(line);
+      const trimmed = line.slice(lineIndentation.length);
+      const openingTagClose = findOpeningTagClose(trimmed);
+      if (openingTagClose === -1) {
+        return line;
+      }
+
+      const tagNameEnd = findTagNameEnd(trimmed);
+      if (tagNameEnd <= 1) {
+        return line;
+      }
+
+      const head = trimmed.slice(0, tagNameEnd);
+      let body = trimmed.slice(tagNameEnd, openingTagClose).trimStart();
+      const tail = trimmed.slice(openingTagClose);
+      if (!body) {
+        return line;
+      }
+
+      const chunks: string[] = [];
+      let cursor = 0;
+      while (cursor < body.length) {
+        while (cursor < body.length && /\s/.test(body[cursor] ?? "")) {
+          cursor += 1;
+        }
+        if (cursor >= body.length) {
+          break;
+        }
+        const chunk = consumeAttributeChunk(body, cursor);
+        if (!chunk.value) {
+          break;
+        }
+        chunks.push(chunk.value);
+        cursor = chunk.end;
+      }
+
+      if (chunks.length < 2 && !chunks[0]?.startsWith("<%")) {
+        return line;
+      }
+
+      const lines = [`${lineIndentation}${head}`];
+      const lastIndex = chunks.length - 1;
+      chunks.forEach((chunk, index) => {
+        const suffix = index === lastIndex ? tail : "";
+        lines.push(`${lineIndentation}${indent}${chunk}${suffix}`);
+      });
+      return lines.join("\n");
+    })
+    .join("\n");
+}
+
 function createSlotNonce(originalSource: string): string {
   let nonce = randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
 
@@ -525,8 +703,9 @@ export async function formatTemplateDocument(
   const placeholderSource = placeholderParts.join("");
   const slotPattern = buildSlotPattern(replacements.keys());
   const formattedText = await formatTextPlaceholders(placeholderSource, options);
-  const rendered = normalizeStandaloneExecTagIndentation(
-    replaceSlots(formattedText, replacements, slotPattern)
+  const rendered = wrapLongEmbeddedHtmlTagLines(
+    normalizeStandaloneExecTagIndentation(replaceSlots(formattedText, replacements, slotPattern)),
+    options
   );
   return rendered.endsWith("\n") ? rendered : `${rendered}\n`;
 }

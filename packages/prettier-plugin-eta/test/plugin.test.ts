@@ -345,6 +345,36 @@ test("keeps standalone raw output tags inline when the source expression was inl
   );
 });
 
+test("wraps long html start tags that contain embedded eta attributes", async () => {
+  const source = [
+    "<thead><tr>",
+    "<% for (const col of it.cols) { %>",
+    '  <th<% if (col.w) { %> style="width:<%= col.w %>"<% } %><% if (col.i18n) { %> x-text="<%= it.tFn || "$t" %>(\'<%= col.i18n %>\')"<% } %><% if (col.cls) { %> class="<%= col.cls %>"<% } %>></th>',
+    "<% } %>",
+    "</tr></thead>",
+    ""
+  ].join("\n");
+
+  const result = await formatEta(source, {
+    printWidth: 120
+  });
+
+  assert.equal(
+    result,
+    [
+      "<thead><tr>",
+      "  <% for (const col of it.cols) { %>",
+      "  <th",
+      '    <% if (col.w) { %> style="width:<%= col.w %>"<% } %>',
+      '    <% if (col.i18n) { %> x-text="<%= it.tFn || "$t" %>(\'<%= col.i18n %>\')"<% } %>',
+      '    <% if (col.cls) { %> class="<%= col.cls %>"<% } %>></th>',
+      "  <% } %>",
+      "</tr></thead>",
+      ""
+    ].join("\n")
+  );
+});
+
 test("rejects malformed eta tags", async () => {
   await assert.rejects(() => formatEta("<% if (enabled) { "), /Unterminated Eta tag/);
 });

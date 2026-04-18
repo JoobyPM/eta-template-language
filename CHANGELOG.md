@@ -22,6 +22,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Switched the extension publisher id from the local placeholder value to the real `JoobyPM` namespace used for Open VSX publication.
 - Stopped reflowing Markdown tables and fenced code blocks in `.md.eta` and `.markdown.eta` files during placeholder formatting.
 - Recovered standalone Eta exec-tag indentation from surrounding HTML context so previously mangled nested control blocks reformat cleanly.
+- Wrapped long HTML start tags that contain embedded Eta-controlled attributes so mixed HTML/Eta lines honor `printWidth` instead of staying as single unreadable lines.
 
 ### Fixed
 
