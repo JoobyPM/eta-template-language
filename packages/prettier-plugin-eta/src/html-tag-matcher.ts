@@ -9,6 +9,8 @@ import { scanEtaTagEnd } from "./lexer.js";
  * HTML tags inside Eta control blocks are balanced correctly.
  */
 
+const RAW_TEXT_ELEMENTS = new Set(["script", "style", "textarea", "title"]);
+
 const VOID_ELEMENTS = new Set([
   "area",
   "base",
@@ -86,6 +88,21 @@ function isAsciiWhitespace(character: string | undefined): boolean {
   return character === " " || character === "\t" || character === "\n" || character === "\r";
 }
 
+function skipToClosingTag(source: string, cursor: number, tagName: string): number {
+  const target = `</${tagName}`;
+  while (cursor < source.length) {
+    if (source.startsWith("<%", cursor)) {
+      cursor = safeScanEtaTagEnd(source, cursor);
+      continue;
+    }
+    if (source.slice(cursor, cursor + target.length).toLowerCase() === target) {
+      return cursor;
+    }
+    cursor += 1;
+  }
+  return source.length;
+}
+
 function tokenizeHtmlTags(source: string): TagToken[] {
   const tokens: TagToken[] = [];
   let cursor = 0;
@@ -161,6 +178,10 @@ function tokenizeHtmlTags(source: string): TagToken[] {
 
     tokens.push({ kind, name, nameStart, nameEnd });
     cursor = tagEnd;
+
+    if (kind === "open" && RAW_TEXT_ELEMENTS.has(name)) {
+      cursor = skipToClosingTag(source, cursor, name);
+    }
   }
 
   return tokens;

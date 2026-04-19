@@ -11,7 +11,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
-- Exposed `etaFormatter.trailingComma` (`all`, `es5`, `none`), `etaFormatter.htmlWhitespaceSensitivity` (`css`, `strict`, `ignore`), and `etaFormatter.proseWrap` (`always`, `never`, `preserve`) as workspace-scoped settings. All three follow the same precedence: workspace setting overrides `.prettierrc`, which overrides the extension default.
+- Exposed `etaFormatter.trailingComma` (`all`, `es5`, `none`), `etaFormatter.htmlWhitespaceSensitivity` (`css`, `strict`, `ignore`), and `etaFormatter.proseWrap` (`always`, `never`, `preserve`) as resource-scoped settings. Precedence: explicit editor setting overrides `.prettierrc`, which overrides the extension default.
 - Added an Eta-aware HTML tag pair highlight provider so placing the cursor on an opening or closing tag name highlights only the matching pair instead of every same-named word in the document.
 - Exposed the Eta-aware HTML tag matcher as a `prettier-plugin-eta/html-tag-matcher` subpath import for downstream Eta tooling.
 
@@ -21,7 +21,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Fixed
 
-- Fixed `htmlWhitespaceSensitivity` being silently dropped by the plugin's internal Prettier calls, causing inline HTML elements to always produce `><span` hug patterns. Default is now `ignore` so Eta templates format cleanly out of the box.
+- Fixed `htmlWhitespaceSensitivity` being silently dropped by the plugin's internal Prettier calls, causing inline HTML elements to always produce `><span` hug patterns. The extension now defaults to `ignore` so Eta templates format cleanly out of the box (the standalone Prettier plugin inherits Prettier's own default when used outside the extension).
 - Validated all enum formatter settings at the extension boundary instead of relying on unchecked type casts; invalid values now fall back to the documented default.
 
 ## [0.2.10] - 2026-04-19

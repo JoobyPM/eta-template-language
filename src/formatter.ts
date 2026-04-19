@@ -27,33 +27,53 @@ interface PickedOption<T> {
   fallback: T;
 }
 
+function hasExplicitUserValue(formatterConfig: vscode.WorkspaceConfiguration, settingKey: string): boolean {
+  const info = formatterConfig.inspect(settingKey);
+  if (!info) {
+    return false;
+  }
+  return (
+    info.workspaceFolderValue !== undefined ||
+    info.workspaceValue !== undefined ||
+    info.globalValue !== undefined ||
+    info.workspaceFolderLanguageValue !== undefined ||
+    info.workspaceLanguageValue !== undefined ||
+    info.globalLanguageValue !== undefined
+  );
+}
+
 function pickValidatedBool(options: PickedOption<boolean>): boolean {
   const { formatterConfig, resolvedConfig, settingKey, prettierKey = settingKey, fallback } = options;
+  if (hasExplicitUserValue(formatterConfig, settingKey)) {
+    const raw = formatterConfig.get<boolean>(settingKey);
+    return typeof raw === "boolean" ? raw : fallback;
+  }
   const prettierValue = readPrettierValue(resolvedConfig, prettierKey);
-  const seed = typeof prettierValue === "boolean" ? prettierValue : fallback;
-  const raw = formatterConfig.get<boolean>(settingKey, seed);
-  return typeof raw === "boolean" ? raw : fallback;
+  return typeof prettierValue === "boolean" ? prettierValue : fallback;
 }
 
 function pickValidatedNumber(options: PickedOption<number>): number {
   const { formatterConfig, resolvedConfig, settingKey, prettierKey = settingKey, fallback } = options;
+  if (hasExplicitUserValue(formatterConfig, settingKey)) {
+    const raw = formatterConfig.get<number>(settingKey);
+    return typeof raw === "number" && Number.isFinite(raw) ? raw : fallback;
+  }
   const prettierValue = readPrettierValue(resolvedConfig, prettierKey);
-  const seed = typeof prettierValue === "number" && Number.isFinite(prettierValue) ? prettierValue : fallback;
-  const raw = formatterConfig.get<number>(settingKey, seed);
-  return typeof raw === "number" && Number.isFinite(raw) ? raw : fallback;
+  return typeof prettierValue === "number" && Number.isFinite(prettierValue) ? prettierValue : fallback;
 }
 
 function pickValidatedEnum<const Values extends readonly string[]>(
   options: PickedOption<Values[number]> & { allowedValues: Values }
 ): Values[number] {
   const { formatterConfig, resolvedConfig, settingKey, prettierKey = settingKey, allowedValues, fallback } = options;
+  if (hasExplicitUserValue(formatterConfig, settingKey)) {
+    const raw = formatterConfig.get<string>(settingKey);
+    return typeof raw === "string" && allowedValues.includes(raw) ? (raw as Values[number]) : fallback;
+  }
   const prettierValue = readPrettierValue(resolvedConfig, prettierKey);
-  const seed =
-    typeof prettierValue === "string" && allowedValues.includes(prettierValue)
-      ? (prettierValue as Values[number])
-      : fallback;
-  const raw = formatterConfig.get<string>(settingKey, seed);
-  return typeof raw === "string" && allowedValues.includes(raw) ? (raw as Values[number]) : fallback;
+  return typeof prettierValue === "string" && allowedValues.includes(prettierValue)
+    ? (prettierValue as Values[number])
+    : fallback;
 }
 
 export async function provideEtaFormattingEdits(

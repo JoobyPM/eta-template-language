@@ -58,7 +58,13 @@ function createEtaDocument(vscode, tempDir, relativePath, source) {
     offsetAt(position) {
       const clampedLine = Math.max(0, Math.min(position.line, lineStarts.length - 1));
       const lineStart = lineStarts[clampedLine] ?? 0;
-      return lineStart + position.character;
+      const nextLineStart = lineStarts[clampedLine + 1] ?? source.length;
+      const lineLength =
+        nextLineStart > lineStart && source[nextLineStart - 1] === "\n"
+          ? nextLineStart - lineStart - 1
+          : nextLineStart - lineStart;
+      const clampedCharacter = Math.max(0, Math.min(position.character, lineLength));
+      return lineStart + clampedCharacter;
     },
     positionAt(offset) {
       const clamped = Math.max(0, Math.min(offset, source.length));
@@ -184,6 +190,9 @@ module.exports = {
       return {
         get(_key, fallback) {
           return fallback;
+        },
+        inspect() {
+          return {};
         }
       };
     }

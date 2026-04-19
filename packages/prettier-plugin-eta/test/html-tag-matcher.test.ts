@@ -156,6 +156,25 @@ test("matches names containing underscores", () => {
   assert.equal(substring(source, match.primary), "my_widget");
 });
 
+test("skips raw-text element content without emitting spurious tags", () => {
+  const source = "<div><script>const tag = '<span>';</script></div>";
+  const cursor = source.indexOf("div") + 1;
+  const match = findMatchingHtmlTag(source, cursor);
+  assert.ok(match);
+  assert.ok(match.mate);
+  assert.equal(substring(source, match.mate), "div");
+  assert.equal(match.mate.start, source.lastIndexOf("div"));
+});
+
+test("matches script element to its closing tag", () => {
+  const source = '<script type="module">const x = 1;</script>';
+  const cursor = source.indexOf("script") + 1;
+  const match = findMatchingHtmlTag(source, cursor);
+  assert.ok(match);
+  assert.ok(match.mate);
+  assert.equal(substring(source, match.mate), "script");
+});
+
 test("matches across multi-line source with Eta control blocks", () => {
   const source = [
     "<section>",
