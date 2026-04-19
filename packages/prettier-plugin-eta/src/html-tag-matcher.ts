@@ -245,8 +245,19 @@ function rangeFromToken(token: TagToken): NameRange {
   return { start: token.nameStart, end: token.nameEnd };
 }
 
+let cachedSource: string | null = null;
+let cachedTokens: TagToken[] = [];
+
+function getCachedTokens(source: string): TagToken[] {
+  if (source !== cachedSource) {
+    cachedSource = source;
+    cachedTokens = tokenizeHtmlTags(source);
+  }
+  return cachedTokens;
+}
+
 export function findMatchingHtmlTag(source: string, offset: number): TagMatch | null {
-  const tokens = tokenizeHtmlTags(source);
+  const tokens = getCachedTokens(source);
   const located = findTokenAtOffset(tokens, offset);
   if (!located) {
     return null;
