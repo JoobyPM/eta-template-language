@@ -15,6 +15,8 @@ GRAMMAR_FILES = [
     Path("syntaxes/eta.tmLanguage.json"),
     Path("syntaxes/eta.injection.tmLanguage.json"),
 ]
+ETA_DELIMITER_SCOPE = "punctuation.section.embedded.eta"
+ETA_JS_BODY_SCOPE = "source.eta.embedded.javascript"
 
 VALID_CASES = {
     "escaped": [
@@ -79,7 +81,7 @@ def test_syntax_patterns_match_the_generator_contract() -> None:
 
     assert js_body["begin"] == r"\G", "js body begin mismatch in shared Eta repository"
     assert js_body["end"] == r"(?=(\s*)(-|_)?(%>))", "js body end mismatch in shared Eta repository"
-    assert js_body["name"] == "source.js.embedded.eta", "js body scope mismatch in shared Eta repository"
+    assert js_body["name"] == ETA_JS_BODY_SCOPE, "js body scope mismatch in shared Eta repository"
     assert js_body["patterns"][0]["include"] == "#eta-js", "js body should route through the Eta JS lexer"
     assert len(js_body["patterns"]) == 1, "js body should use a single Eta JS entrypoint"
     assert comment_block_index < curly_block_index, "Eta JS lexer should prioritize comments before braces"
@@ -88,10 +90,10 @@ def test_syntax_patterns_match_the_generator_contract() -> None:
 
     assert curly_repo["begin"] == r"\{", "curly begin mismatch in shared Eta repository"
     assert curly_repo["end"] == r"(\})|(?=(\s*)(-|_)?(%>))", "curly end mismatch in shared Eta repository"
-    assert curly_repo["beginCaptures"]["0"]["name"] == "punctuation.section.embedded.begin.eta", (
+    assert curly_repo["beginCaptures"]["0"]["name"] == ETA_DELIMITER_SCOPE, (
         "curly begin scope mismatch in shared Eta repository"
     )
-    assert curly_repo["endCaptures"]["1"]["name"] == "punctuation.section.embedded.end.eta", (
+    assert curly_repo["endCaptures"]["1"]["name"] == ETA_DELIMITER_SCOPE, (
         "curly end scope mismatch in shared Eta repository"
     )
 

@@ -14,6 +14,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ETA_GRAMMAR_PATH = path.join(ROOT, "syntaxes", "eta.tmLanguage.json");
 const ETA_INJECTION_GRAMMAR_PATH = path.join(ROOT, "syntaxes", "eta.injection.tmLanguage.json");
 const ONIG_WASM_PATH = path.join(ROOT, "node_modules", "vscode-oniguruma", "release", "onig.wasm");
+const ETA_DELIMITER_SCOPE = "punctuation.section.embedded.eta";
 
 const MOCK_HTML_GRAMMAR = {
   scopeName: "text.html.basic",
@@ -93,6 +94,20 @@ function tokenizeLine(grammar, line) {
   }));
 }
 
+function tokenizeLines(grammar, lines) {
+  let stack = vscodeTextmate.INITIAL;
+
+  return lines.map((line) => {
+    const result = grammar.tokenizeLine(line, stack);
+    stack = result.ruleStack;
+
+    return result.tokens.map((token) => ({
+      text: line.slice(token.startIndex, token.endIndex),
+      scopes: token.scopes,
+    }));
+  });
+}
+
 function findToken(tokens, text, scope) {
   return tokens.find((token) => token.text === text && token.scopes.includes(scope));
 }
@@ -106,10 +121,10 @@ test("exec tags close cleanly after an opening block brace", async () => {
   const grammar = await registry.loadGrammar("text.html.eta");
   const tokens = tokenizeLine(grammar, "<% if (it.extraClass) { %>");
 
-  assert.ok(findToken(tokens, "<%", "punctuation.section.embedded.begin.eta"));
-  assert.ok(findToken(tokens, "{", "punctuation.section.embedded.begin.eta"));
-  assert.ok(findToken(tokens, "%>", "punctuation.section.embedded.end.eta"));
-  assert.equal(countTokens(tokens, "%>", "punctuation.section.embedded.end.eta"), 1);
+  assert.ok(findToken(tokens, "<%", ETA_DELIMITER_SCOPE));
+  assert.ok(findToken(tokens, "{", ETA_DELIMITER_SCOPE));
+  assert.ok(findToken(tokens, "%>", ETA_DELIMITER_SCOPE));
+  assert.equal(countTokens(tokens, "%>", ETA_DELIMITER_SCOPE), 1);
 });
 
 test("standalone closing braces keep Eta punctuation scopes", async () => {
@@ -117,8 +132,8 @@ test("standalone closing braces keep Eta punctuation scopes", async () => {
   const grammar = await registry.loadGrammar("text.html.eta");
   const tokens = tokenizeLine(grammar, "<% } %>");
 
-  assert.ok(findToken(tokens, "}", "punctuation.section.embedded.end.eta"));
-  assert.ok(findToken(tokens, "%>", "punctuation.section.embedded.end.eta"));
+  assert.ok(findToken(tokens, "}", ETA_DELIMITER_SCOPE));
+  assert.ok(findToken(tokens, "%>", ETA_DELIMITER_SCOPE));
 });
 
 test("percent-close inside JavaScript strings does not terminate the tag", async () => {
@@ -127,8 +142,8 @@ test("percent-close inside JavaScript strings does not terminate the tag", async
   const tokens = tokenizeLine(grammar, '<% const x = "%>"; %>');
 
   assert.ok(findToken(tokens, "%>", "string.quoted.double.js"));
-  assert.ok(findToken(tokens, "%>", "punctuation.section.embedded.end.eta"));
-  assert.equal(countTokens(tokens, "%>", "punctuation.section.embedded.end.eta"), 1);
+  assert.ok(findToken(tokens, "%>", ETA_DELIMITER_SCOPE));
+  assert.equal(countTokens(tokens, "%>", ETA_DELIMITER_SCOPE), 1);
 });
 
 test("Eta injection inside HTML attribute strings stays balanced", async () => {
@@ -138,10 +153,20 @@ test("Eta injection inside HTML attribute strings stays balanced", async () => {
     '<table class="table table-condensed table-striped<% if (it.extraClass) { %> <%= it.extraClass %><% } %>" id="<%= it.tableId %>">';
   const tokens = tokenizeLine(grammar, line);
 
-  assert.equal(countTokens(tokens, "<%", "punctuation.section.embedded.begin.eta"), 4);
-  assert.equal(countTokens(tokens, "%>", "punctuation.section.embedded.end.eta"), 4);
-  assert.ok(findToken(tokens, "{", "punctuation.section.embedded.begin.eta"));
-  assert.ok(findToken(tokens, "}", "punctuation.section.embedded.end.eta"));
+  assert.equal(countTokens(tokens, "<%", ETA_DELIMITER_SCOPE), 4);
+  assert.equal(countTokens(tokens, "%>", ETA_DELIMITER_SCOPE), 4);
+  assert.ok(findToken(tokens, "{", ETA_DELIMITER_SCOPE));
+  assert.ok(findToken(tokens, "}", ETA_DELIMITER_SCOPE));
+});
+
+test("escaped output delimiters keep a shared Eta scope in attribute values", async () => {
+  const registry = await createRegistry();
+  const grammar = await registry.loadGrammar("text.html.eta");
+  const tokens = tokenizeLine(grammar, '            colspan="<%= it.tables.programmes.emptyColspan || 28 %>"');
+
+  assert.ok(findToken(tokens, "<%", ETA_DELIMITER_SCOPE));
+  assert.ok(findToken(tokens, "=", ETA_DELIMITER_SCOPE));
+  assert.ok(findToken(tokens, "%>", ETA_DELIMITER_SCOPE));
 });
 
 test("Eta comment tags get dedicated comment scopes", async () => {
@@ -149,8 +174,8 @@ test("Eta comment tags get dedicated comment scopes", async () => {
   const grammar = await registry.loadGrammar("text.html.eta");
   const tokens = tokenizeLine(grammar, "<%# note %>");
 
-  assert.ok(findToken(tokens, "<%", "punctuation.section.embedded.begin.eta"));
-  assert.ok(findToken(tokens, "%>", "punctuation.section.embedded.end.eta"));
+  assert.ok(findToken(tokens, "<%", ETA_DELIMITER_SCOPE));
+  assert.ok(findToken(tokens, "%>", ETA_DELIMITER_SCOPE));
   assert.ok(tokens.some((token) => token.text.includes("note") && token.scopes.includes("comment.block.eta")));
 });
 
@@ -160,7 +185,7 @@ test("Eta line comments still yield to the tag close delimiter", async () => {
   const tokens = tokenizeLine(grammar, "<% // note %>");
 
   assert.ok(findToken(tokens, "//", "punctuation.definition.comment.js"));
-  assert.ok(findToken(tokens, "%>", "punctuation.section.embedded.end.eta"));
+  assert.ok(findToken(tokens, "%>", ETA_DELIMITER_SCOPE));
 });
 
 test("Eta number highlighting recognizes modern JavaScript numeric literals", async () => {
@@ -171,4 +196,53 @@ test("Eta number highlighting recognizes modern JavaScript numeric literals", as
   for (const literal of [".5", "1e10", "1.5e-3", "0b10", "0o77", "0xFF", "123n", "1_000"]) {
     assert.ok(findToken(tokens, literal, "constant.numeric.js"), `missing numeric token for ${literal}`);
   }
+});
+
+test("Eta injection stays balanced inside Alpine attribute expressions", async () => {
+  const registry = await createRegistry();
+  const grammar = await registry.loadGrammar("text.html.basic");
+  const line = `<span x-text="<%= it.tFn || "$t" %>('<%= it.loadingKey %>')"></span>`;
+  const tokens = tokenizeLine(grammar, line);
+
+  assert.equal(countTokens(tokens, "<%", ETA_DELIMITER_SCOPE), 2);
+  assert.equal(countTokens(tokens, "%>", ETA_DELIMITER_SCOPE), 2);
+  assert.ok(findToken(tokens, "||", "keyword.operator.js"));
+});
+
+test("Eta delimiters keep a single scope across carried state in nested HTML blocks", async () => {
+  const registry = await createRegistry();
+  const grammar = await registry.loadGrammar("text.html.eta");
+  const tokenLines = tokenizeLines(grammar, [
+    "    <% if (it.loadingKey) { %>",
+    "      <span>Loading</span>",
+    "    <% } %>",
+    "    <% if (it.labelExpr) { %>",
+    "    <% } else if (it.labelKey) { %>",
+    "    <% } %>",
+  ]);
+
+  for (const [index, tokens] of tokenLines.entries()) {
+    const delimiters = tokens.filter((token) => ["<%", "%>", "{", "}"].includes(token.text));
+    if (delimiters.length === 0) {
+      continue;
+    }
+    assert.ok(
+      delimiters.every((token) => token.scopes.includes(ETA_DELIMITER_SCOPE)),
+      `expected every Eta delimiter to use the shared Eta delimiter scope on carried-state line ${index + 1}`,
+    );
+  }
+});
+
+test("Eta open delimiters share the same scope stack across exec and output tags", async () => {
+  const registry = await createRegistry();
+  const grammar = await registry.loadGrammar("text.html.eta");
+  const execOpen = findToken(tokenizeLine(grammar, "<% if (it.ok) { %>"), "<%", ETA_DELIMITER_SCOPE);
+  const escapedOpen = findToken(tokenizeLine(grammar, "<%= it.value %>"), "<%", ETA_DELIMITER_SCOPE);
+  const rawOpen = findToken(tokenizeLine(grammar, "<%~ include('/x') %>"), "<%", ETA_DELIMITER_SCOPE);
+
+  assert.ok(execOpen);
+  assert.ok(escapedOpen);
+  assert.ok(rawOpen);
+  assert.deepEqual(execOpen.scopes, escapedOpen.scopes);
+  assert.deepEqual(execOpen.scopes, rawOpen.scopes);
 });

@@ -10,12 +10,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json"
 ETA_CLOSE_LOOKAHEAD = r"(?=(\s*)(-|_)?(%>))"
+ETA_DELIMITER_SCOPE = "punctuation.section.embedded.eta"
+ETA_JS_BODY_SCOPE = "source.eta.embedded.javascript"
+ETA_TAG_SCOPE = "meta.embedded.block.eta"
 
 ETA_REPOSITORY = {
     "eta-js-body": {
         "begin": r"\G",
         "end": ETA_CLOSE_LOOKAHEAD,
-        "name": "source.js.embedded.eta",
+        "name": ETA_JS_BODY_SCOPE,
         "patterns": [{"include": "#eta-js"}],
     },
     "eta-js": {
@@ -112,17 +115,17 @@ ETA_REPOSITORY = {
         "name": "meta.embedded.block.eta.js.curly",
         "begin": r"\{",
         "beginCaptures": {
-            "0": {"name": "punctuation.section.embedded.begin.eta"},
+            "0": {"name": ETA_DELIMITER_SCOPE},
         },
         "end": rf"(\}})|{ETA_CLOSE_LOOKAHEAD}",
         "endCaptures": {
-            "1": {"name": "punctuation.section.embedded.end.eta"},
+            "1": {"name": ETA_DELIMITER_SCOPE},
         },
         "patterns": [{"include": "#eta-js"}],
     },
     "eta-js-curly-close": {
         "match": r"\}",
-        "name": "punctuation.section.embedded.end.eta",
+        "name": ETA_DELIMITER_SCOPE,
     },
     "eta-js-paren-group": {
         "name": "meta.group.parens.eta.js",
@@ -190,61 +193,64 @@ ETA_REPOSITORY = {
         "name": "keyword.operator.js",
     },
     "eta-output-escaped": {
-        "name": "meta.embedded.block.eta.output.escaped",
+        "name": ETA_TAG_SCOPE,
+        "contentName": "meta.embedded.block.eta.output.escaped",
         "begin": "(<%)(-|_)?(\\s*)(=)",
         "beginCaptures": {
-            "1": {"name": "punctuation.section.embedded.begin.eta"},
+            "1": {"name": ETA_DELIMITER_SCOPE},
             "2": {"name": "keyword.operator.whitespace-control.eta"},
-            "4": {"name": "keyword.operator.output.escaped.eta"},
+            "4": {"name": ETA_DELIMITER_SCOPE},
         },
         "end": "(\\s*)(-|_)?(%>)",
         "endCaptures": {
             "2": {"name": "keyword.operator.whitespace-control.eta"},
-            "3": {"name": "punctuation.section.embedded.end.eta"},
+            "3": {"name": ETA_DELIMITER_SCOPE},
         },
         "patterns": [{"include": "#eta-js-body"}],
     },
     "eta-output-raw": {
-        "name": "meta.embedded.block.eta.output.raw",
+        "name": ETA_TAG_SCOPE,
+        "contentName": "meta.embedded.block.eta.output.raw",
         "begin": "(<%)(-|_)?(\\s*)(~)",
         "beginCaptures": {
-            "1": {"name": "punctuation.section.embedded.begin.eta"},
+            "1": {"name": ETA_DELIMITER_SCOPE},
             "2": {"name": "keyword.operator.whitespace-control.eta"},
-            "4": {"name": "keyword.operator.output.raw.eta"},
+            "4": {"name": ETA_DELIMITER_SCOPE},
         },
         "end": "(\\s*)(-|_)?(%>)",
         "endCaptures": {
             "2": {"name": "keyword.operator.whitespace-control.eta"},
-            "3": {"name": "punctuation.section.embedded.end.eta"},
+            "3": {"name": ETA_DELIMITER_SCOPE},
         },
         "patterns": [{"include": "#eta-js-body"}],
     },
     "eta-comment": {
-        "name": "meta.embedded.block.eta.comment",
+        "name": ETA_TAG_SCOPE,
         "begin": "(<%)(-|_)?(\\s*)(#)",
         "beginCaptures": {
-            "1": {"name": "punctuation.section.embedded.begin.eta"},
+            "1": {"name": ETA_DELIMITER_SCOPE},
             "2": {"name": "keyword.operator.whitespace-control.eta"},
-            "4": {"name": "keyword.operator.comment.eta"},
+            "4": {"name": ETA_DELIMITER_SCOPE},
         },
         "end": "(\\s*)(-|_)?(%>)",
         "endCaptures": {
             "2": {"name": "keyword.operator.whitespace-control.eta"},
-            "3": {"name": "punctuation.section.embedded.end.eta"},
+            "3": {"name": ETA_DELIMITER_SCOPE},
         },
         "contentName": "comment.block.eta",
     },
     "eta-exec": {
-        "name": "meta.embedded.block.eta.code",
+        "name": ETA_TAG_SCOPE,
+        "contentName": "meta.embedded.block.eta.code",
         "begin": "(<%)(-|_)?(?!\\s*[=~#])",
         "beginCaptures": {
-            "1": {"name": "punctuation.section.embedded.begin.eta"},
+            "1": {"name": ETA_DELIMITER_SCOPE},
             "2": {"name": "keyword.operator.whitespace-control.eta"},
         },
         "end": "(\\s*)(-|_)?(%>)",
         "endCaptures": {
             "2": {"name": "keyword.operator.whitespace-control.eta"},
-            "3": {"name": "punctuation.section.embedded.end.eta"},
+            "3": {"name": ETA_DELIMITER_SCOPE},
         },
         "patterns": [{"include": "#eta-js-body"}],
     },

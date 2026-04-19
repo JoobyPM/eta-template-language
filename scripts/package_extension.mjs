@@ -22,21 +22,49 @@ const PACKAGE_CONTENTS = [
   "LICENSE"
 ];
 
+const PRETTIER_RUNTIME_FILES = [
+  "package.json",
+  "LICENSE",
+  "THIRD-PARTY-NOTICES.md",
+  "index.cjs",
+  "index.mjs",
+  "doc.js",
+  "doc.mjs",
+  "plugins/babel.js",
+  "plugins/babel.mjs",
+  "plugins/estree.js",
+  "plugins/estree.mjs",
+  "plugins/html.js",
+  "plugins/html.mjs",
+  "plugins/markdown.js",
+  "plugins/markdown.mjs"
+];
+
 async function stagePackageContents(stageDir) {
   for (const entry of PACKAGE_CONTENTS) {
     await fs.cp(path.join(ROOT, entry), path.join(stageDir, entry), { recursive: true });
   }
 
-  await fs.cp(
-    path.join(ROOT, "node_modules", "prettier"),
-    path.join(stageDir, "node_modules", "prettier"),
-    { recursive: true }
-  );
+  for (const entry of PRETTIER_RUNTIME_FILES) {
+    await fs.cp(
+      path.join(ROOT, "node_modules", "prettier", entry),
+      path.join(stageDir, "node_modules", "prettier", entry),
+      { recursive: true }
+    );
+  }
 }
 
 async function writeExtensionManifest(stageDir) {
   const manifest = JSON.parse(await fs.readFile(path.join(ROOT, "package.json"), "utf8"));
   delete manifest.workspaces;
+  delete manifest.scripts;
+  delete manifest.devDependencies;
+  if (manifest.dependencies) {
+    delete manifest.dependencies.prettier;
+    if (Object.keys(manifest.dependencies).length === 0) {
+      delete manifest.dependencies;
+    }
+  }
   await fs.writeFile(path.join(stageDir, "package.json"), `${JSON.stringify(manifest, null, 2)}\n`);
   await fs.writeFile(
     path.join(stageDir, ".vscodeignore"),
