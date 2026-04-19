@@ -1,5 +1,13 @@
 node_modules/
 *.vsix
+*.tgz
 __pycache__/
 dist/
 packages/*/dist/
+
+# Editor / OS artifacts
+.*.sw?
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

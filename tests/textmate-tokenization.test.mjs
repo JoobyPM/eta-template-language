@@ -28,15 +28,15 @@ const MOCK_HTML_GRAMMAR = {
         { include: "#double-quoted-string" },
         { match: "[A-Za-z_:][-A-Za-z0-9_:]*", name: "entity.other.attribute-name.html" },
         { match: "=", name: "punctuation.separator.key-value.html" },
-        { match: "\\s+", name: "text.whitespace.html" },
-      ],
+        { match: "\\s+", name: "text.whitespace.html" }
+      ]
     },
     "double-quoted-string": {
       name: "string.quoted.double.html",
       begin: '"',
-      end: '"',
-    },
-  },
+      end: '"'
+    }
+  }
 };
 
 let wasmLoaded = false;
@@ -60,7 +60,7 @@ async function createRegistry() {
   return new Registry({
     onigLib: Promise.resolve({
       createOnigScanner: (sources) => new OnigScanner(sources),
-      createOnigString: (text) => new OnigString(text),
+      createOnigString: (text) => new OnigString(text)
     }),
     loadGrammar: async (scopeName) => {
       if (scopeName === "text.html.eta") {
@@ -83,14 +83,14 @@ async function createRegistry() {
       }
 
       return [];
-    },
+    }
   });
 }
 
 function tokenizeLine(grammar, line) {
   return grammar.tokenizeLine(line).tokens.map((token) => ({
     text: line.slice(token.startIndex, token.endIndex),
-    scopes: token.scopes,
+    scopes: token.scopes
   }));
 }
 
@@ -103,7 +103,7 @@ function tokenizeLines(grammar, lines) {
 
     return result.tokens.map((token) => ({
       text: line.slice(token.startIndex, token.endIndex),
-      scopes: token.scopes,
+      scopes: token.scopes
     }));
   });
 }
@@ -218,7 +218,7 @@ test("Eta delimiters keep a single scope across carried state in nested HTML blo
     "    <% } %>",
     "    <% if (it.labelExpr) { %>",
     "    <% } else if (it.labelKey) { %>",
-    "    <% } %>",
+    "    <% } %>"
   ]);
 
   for (const [index, tokens] of tokenLines.entries()) {
@@ -228,7 +228,7 @@ test("Eta delimiters keep a single scope across carried state in nested HTML blo
     }
     assert.ok(
       delimiters.every((token) => token.scopes.includes(ETA_DELIMITER_SCOPE)),
-      `expected every Eta delimiter to use the shared Eta delimiter scope on carried-state line ${index + 1}`,
+      `expected every Eta delimiter to use the shared Eta delimiter scope on carried-state line ${index + 1}`
     );
   }
 });

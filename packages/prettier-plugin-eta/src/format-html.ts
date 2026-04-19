@@ -18,11 +18,8 @@ const SLOT_PREFIX = "ETASLOT";
 const SLOT_SUFFIX = "X";
 const PROTECTED_PREFIX = "ETAPROTECT";
 const PROTECTED_SUFFIX = "X";
-const STANDALONE_TAG_LINE_PATTERN = new RegExp(
-  `^[\\t ]*${SLOT_PREFIX}[A-F0-9]+TAG\\d+${SLOT_SUFFIX}[\\t ]*$`
-);
-const MARKDOWN_TABLE_SEPARATOR_PATTERN =
-  /^\s*\|?(?:\s*:?-{3,}:?\s*\|)+(?:\s*:?-{3,}:?\s*)\|?\s*$/;
+const STANDALONE_TAG_LINE_PATTERN = new RegExp(`^[\\t ]*${SLOT_PREFIX}[A-F0-9]+TAG\\d+${SLOT_SUFFIX}[\\t ]*$`);
+const MARKDOWN_TABLE_SEPARATOR_PATTERN = /^\s*\|?(?:\s*:?-{3,}:?\s*\|)+(?:\s*:?-{3,}:?\s*)\|?\s*$/;
 
 function slotToken(kind: string, index: number, nonce: string): string {
   return `${SLOT_PREFIX}${nonce}${kind}${index}${SLOT_SUFFIX}`;
@@ -41,11 +38,7 @@ function buildSlotPattern(tokens: Iterable<string>): RegExp | null {
   return new RegExp(escapedTokens.join("|"), "g");
 }
 
-function replaceProtectedRegions(
-  source: string,
-  replacements: Map<string, string>,
-  pattern: RegExp | null
-): string {
+function replaceProtectedRegions(source: string, replacements: Map<string, string>, pattern: RegExp | null): string {
   if (!pattern) {
     return source;
   }
@@ -150,11 +143,7 @@ function isStandaloneLineTag(node: TagNode, originalSource: string): boolean {
   return /^[\t ]*$/.test(before) && /^[\t ]*$/.test(after);
 }
 
-async function formatTagNode(
-  node: TagNode,
-  options: EtaPluginOptions,
-  originalSource: string
-): Promise<string> {
+async function formatTagNode(node: TagNode, options: EtaPluginOptions, originalSource: string): Promise<string> {
   const open = buildOpenDelimiter(node);
   const close = buildCloseDelimiter(node);
   const standaloneLine = isStandaloneLineTag(node, originalSource);
@@ -179,9 +168,7 @@ async function formatTagNode(
     const compactInner = await formatExpressionSourceInline(node.innerSource, options);
     const inlineLength = `${open} ${compactInner} ${close}`.length;
     if (inlineLength <= (options.printWidth ?? 80)) {
-      return close === "%>"
-        ? `${open} ${compactInner} %>`
-        : `${open} ${compactInner} ${close}`;
+      return close === "%>" ? `${open} ${compactInner} %>` : `${open} ${compactInner} ${close}`;
     }
   }
 
@@ -193,9 +180,7 @@ async function formatTagNode(
   }
 
   if (!formattedInner.includes("\n")) {
-    return close === "%>"
-      ? `${open} ${formattedInner} %>`
-      : `${open} ${formattedInner} ${close}`;
+    return close === "%>" ? `${open} ${formattedInner} %>` : `${open} ${formattedInner} ${close}`;
   }
 
   return [open, formattedInner, close].join("\n");
@@ -352,10 +337,7 @@ async function formatTextPlaceholders(source: string, options: EtaPluginOptions)
       extraOptions.proseWrap = options.proseWrap;
     }
 
-    const formatted = await prettier.format(
-      protectedSource,
-      buildPrettierOptions(options, extraOptions)
-    );
+    const formatted = await prettier.format(protectedSource, buildPrettierOptions(options, extraOptions));
     const restoredMarkdown = replaceProtectedRegions(
       formatted,
       markdownProtectedReplacements,
@@ -389,9 +371,7 @@ function replaceSlots(source: string, replacements: Map<string, string>, slotPat
     }
 
     const lines = replacement.split("\n");
-    return [lines[0] ?? "", ...lines.slice(1).map((line) => (line ? `${prefix}${line}` : line))].join(
-      "\n"
-    );
+    return [lines[0] ?? "", ...lines.slice(1).map((line) => (line ? `${prefix}${line}` : line))].join("\n");
   });
 }
 
@@ -405,11 +385,7 @@ function indentationWidth(indentation: string): number {
 
 function detectIndentationStep(lines: string[]): number {
   const widths = Array.from(
-    new Set(
-      lines
-        .map((line) => indentationWidth(leadingIndentation(line)))
-        .filter((width) => width > 0)
-    )
+    new Set(lines.map((line) => indentationWidth(leadingIndentation(line))).filter((width) => width > 0))
   ).sort((left, right) => left - right);
 
   if (widths.length === 0) {
@@ -445,11 +421,7 @@ function resolveIndentation(lines: string[], targetWidth: number, fallback: stri
 }
 
 function findNeighborIndentation(lines: string[], index: number, direction: 1 | -1): string {
-  for (
-    let cursor = index + direction;
-    cursor >= 0 && cursor < lines.length;
-    cursor += direction
-  ) {
+  for (let cursor = index + direction; cursor >= 0 && cursor < lines.length; cursor += direction) {
     const line = lines[cursor] ?? "";
     if (!line.trim()) {
       continue;
@@ -763,9 +735,7 @@ export async function formatTemplateDocument(
   const placeholderSource = placeholderParts.join("");
   const slotPattern = buildSlotPattern(replacements.keys());
   const formattedText = await formatTextPlaceholders(placeholderSource, options);
-  const normalized = normalizeStandaloneExecTagIndentation(
-    replaceSlots(formattedText, replacements, slotPattern)
-  );
+  const normalized = normalizeStandaloneExecTagIndentation(replaceSlots(formattedText, replacements, slotPattern));
   const wrapped = wrapLongEmbeddedHtmlTagLines(normalized, options);
   const rendered = normalizeStandaloneExecTagIndentation(wrapped);
   return `${rendered.replace(/\n+$/, "")}\n`;

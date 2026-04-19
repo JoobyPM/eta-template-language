@@ -37,9 +37,7 @@ function dedentExtractedBlock(text: string): string {
   }
 
   const lines = trimmed.split("\n");
-  const indentationWidths = lines
-    .filter((line) => line.trim())
-    .map((line) => line.match(/^[\t ]*/)?.[0].length ?? 0);
+  const indentationWidths = lines.filter((line) => line.trim()).map((line) => line.match(/^[\t ]*/)?.[0].length ?? 0);
 
   const minIndentation = indentationWidths.reduce((currentMinimum, width) => Math.min(currentMinimum, width), Infinity);
   if (!Number.isFinite(minIndentation) || minIndentation <= 0) {
@@ -109,7 +107,7 @@ export function logFormattingFailure(context: string, error: unknown): void {
     return;
   }
 
-  const details = error instanceof Error ? error.stack ?? error.message : String(error);
+  const details = error instanceof Error ? (error.stack ?? error.message) : String(error);
   console.warn(`[prettier-plugin-eta] ${context}: ${details}`);
 }
 
@@ -124,15 +122,7 @@ async function formatWithParser(
 async function formatOpenControlFragment(source: string, options: EtaPluginOptions): Promise<string> {
   const startMarker = createCommentMarker("OPEN_START");
   const endMarker = createCommentMarker("OPEN_END");
-  const wrapped = [
-    "async function __eta_exec__() {",
-    startMarker,
-    source,
-    endMarker,
-    "}",
-    "}",
-    ""
-  ].join("\n");
+  const wrapped = ["async function __eta_exec__() {", startMarker, source, endMarker, "}", "}", ""].join("\n");
 
   const formatted = await formatWithParser(wrapped, options);
   return extractBetweenMarkers(formatted, startMarker, endMarker, "Eta open control fragment");
@@ -141,37 +131,18 @@ async function formatOpenControlFragment(source: string, options: EtaPluginOptio
 async function formatElseFragment(source: string, options: EtaPluginOptions): Promise<string> {
   const startMarker = createCommentMarker("ELSE_START");
   const endMarker = createCommentMarker("ELSE_END");
-  const wrapped = [
-    "async function __eta_exec__() {",
-    "if (true) {",
-    startMarker,
-    source,
-    endMarker,
-    "}",
-    "}",
-    ""
-  ].join("\n");
+  const wrapped = ["async function __eta_exec__() {", "if (true) {", startMarker, source, endMarker, "}", "}", ""].join(
+    "\n"
+  );
 
   const formatted = await formatWithParser(wrapped, options);
   return extractBetweenMarkers(formatted, startMarker, endMarker, "Eta else fragment");
 }
 
-async function formatCatchOrFinallyFragment(
-  source: string,
-  options: EtaPluginOptions
-): Promise<string> {
+async function formatCatchOrFinallyFragment(source: string, options: EtaPluginOptions): Promise<string> {
   const startMarker = createCommentMarker("CATCH_START");
   const endMarker = createCommentMarker("CATCH_END");
-  const wrapped = [
-    "async function __eta_exec__() {",
-    "try {",
-    startMarker,
-    source,
-    endMarker,
-    "}",
-    "}",
-    ""
-  ].join("\n");
+  const wrapped = ["async function __eta_exec__() {", "try {", startMarker, source, endMarker, "}", "}", ""].join("\n");
 
   const formatted = await formatWithParser(wrapped, options);
   return extractBetweenMarkers(formatted, startMarker, endMarker, "Eta catch/finally fragment");
@@ -204,10 +175,7 @@ export async function formatExecSource(source: string, options: EtaPluginOptions
   }
 }
 
-export async function formatExpressionSource(
-  source: string,
-  options: EtaPluginOptions
-): Promise<string> {
+export async function formatExpressionSource(source: string, options: EtaPluginOptions): Promise<string> {
   const normalized = trimBlankLines(source);
   if (!normalized) {
     return "";
@@ -234,10 +202,7 @@ export async function formatExpressionSource(
   }
 }
 
-export async function formatExpressionSourceInline(
-  source: string,
-  options: EtaPluginOptions
-): Promise<string> {
+export async function formatExpressionSourceInline(source: string, options: EtaPluginOptions): Promise<string> {
   const normalized = trimBlankLines(source);
   if (!normalized) {
     return "";

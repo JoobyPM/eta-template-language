@@ -32,9 +32,7 @@ test("packaged VSIX contains the bundled extension runtime", async (t) => {
 
   const manifest = await readPackageManifest();
   const vsixPath = path.join(ROOT, `eta-template-language-${manifest.version}.vsix`);
-  const entries = execFileSync("unzip", ["-Z1", vsixPath], { encoding: "utf8" })
-    .split("\n")
-    .filter(Boolean);
+  const entries = execFileSync("unzip", ["-Z1", vsixPath], { encoding: "utf8" }).split("\n").filter(Boolean);
 
   assert.ok(entries.includes("extension/dist/extension.js"), "VSIX should package extension/dist/extension.js");
   assert.ok(entries.includes("extension/images/icon.png"), "VSIX should package the extension icon asset");
@@ -63,17 +61,12 @@ test("packaged VSIX contains the bundled extension runtime", async (t) => {
     !entries.some((entry) => entry.startsWith("extension/node_modules/prettier/bin/")),
     "VSIX should not package Prettier CLI binaries"
   );
-  assert.ok(
-    !entries.some((entry) => entry.endsWith(".d.ts")),
-    "VSIX should not package TypeScript declaration files"
-  );
+  assert.ok(!entries.some((entry) => entry.endsWith(".d.ts")), "VSIX should not package TypeScript declaration files");
   assert.ok(
     !entries.some((entry) => entry === "extension/node_modules/prettier/README.md"),
     "VSIX should not package Prettier README documentation"
   );
-  const prettierPluginEntries = entries.filter((entry) =>
-    entry.startsWith("extension/node_modules/prettier/plugins/")
-  );
+  const prettierPluginEntries = entries.filter((entry) => entry.startsWith("extension/node_modules/prettier/plugins/"));
   const expectedPrettierPlugins = new Set([
     "extension/node_modules/prettier/plugins/babel.js",
     "extension/node_modules/prettier/plugins/babel.mjs",
@@ -107,7 +100,11 @@ test("packaged VSIX contains the bundled extension runtime", async (t) => {
   assert.notEqual(packagedManifest.publisher, "local-dev", "VSIX manifest should not ship a placeholder publisher");
   assert.equal(packagedManifest.icon, "images/icon.png", "VSIX manifest should preserve the extension icon path");
   for (const grammar of packagedManifest.contributes.grammars ?? []) {
-    assert.equal(grammar.embeddedLanguages, undefined, "VSIX grammars should not opt into embedded language semantic highlighting");
+    assert.equal(
+      grammar.embeddedLanguages,
+      undefined,
+      "VSIX grammars should not opt into embedded language semantic highlighting"
+    );
   }
   assert.ok(
     !(packagedLanguageConfiguration.brackets ?? []).some(
@@ -133,7 +130,7 @@ test("packaged VSIX contains the bundled extension runtime", async (t) => {
   assert.match(bundle, /\brequire\((["'])prettier\1\)/);
 });
 
-test("packaged VSIX bundle can load and format an Eta document", async (t) => {
+test("packaged VSIX bundle registers formatter and highlight providers", async (t) => {
   if (!ensureUnzipAvailable(t)) {
     return;
   }
@@ -154,11 +151,9 @@ test("packaged VSIX bundle can load and format an Eta document", async (t) => {
 
     await fs.rm(extractionDir, { recursive: true, force: true });
     await fs.mkdir(extractionDir, { recursive: true });
-    execFileSync(
-      "unzip",
-      ["-qq", vsixPath, "extension/node_modules/prettier/*", "-d", extractionDir],
-      { maxBuffer: 16 * 1024 * 1024 }
-    );
+    execFileSync("unzip", ["-qq", vsixPath, "extension/node_modules/prettier/*", "-d", extractionDir], {
+      maxBuffer: 16 * 1024 * 1024
+    });
 
     await assertBundledExtensionFormats(tempBundlePath, {
       prettierSourceDir: path.join(extractionDir, "extension", "node_modules", "prettier")

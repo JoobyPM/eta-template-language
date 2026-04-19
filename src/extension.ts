@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 
 import { etaFormatterOutputChannel, provideEtaFormattingEdits } from "./formatter.js";
+import { etaDocumentHighlightProvider } from "./highlight-provider.js";
 
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(etaFormatterOutputChannel);
@@ -8,9 +9,12 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.languages.registerDocumentFormattingEditProvider(
       { language: "eta" },
       {
-        provideDocumentFormattingEdits: provideEtaFormattingEdits,
-      },
-    ),
+        provideDocumentFormattingEdits: provideEtaFormattingEdits
+      }
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerDocumentHighlightProvider({ language: "eta" }, etaDocumentHighlightProvider)
   );
 }
 

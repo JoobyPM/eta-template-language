@@ -26,6 +26,9 @@ export function buildPrettierOptions(
   if (options.trailingComma !== undefined) {
     resolved.trailingComma = options.trailingComma;
   }
+  if (options.htmlWhitespaceSensitivity !== undefined) {
+    resolved.htmlWhitespaceSensitivity = options.htmlWhitespaceSensitivity;
+  }
   if (options.useTabs !== undefined) {
     resolved.useTabs = options.useTabs;
   }

@@ -22,10 +22,7 @@ test("formats interpolation and surrounding html", async () => {
 test("formats control flow blocks and nested html", async () => {
   const source = "<ul><% for(const item of items){ %><li><%=item.name%></li><% } %></ul>";
   const result = await formatEta(source);
-  assert.equal(
-    result,
-    "<ul>\n  <% for (const item of items) { %>\n  <li><%= item.name %></li>\n  <% } %>\n</ul>\n"
-  );
+  assert.equal(result, "<ul>\n  <% for (const item of items) { %>\n  <li><%= item.name %></li>\n  <% } %>\n</ul>\n");
 });
 
 test("keeps percent-close inside javascript strings safe", async () => {
@@ -116,10 +113,7 @@ test("dedents multiline execution blocks after formatting", async () => {
     printWidth: 40
   });
 
-  assert.equal(
-    result,
-    ["<%", "const a = 1;", "const b = 2;", "const c = 3;", "%>", ""].join("\n")
-  );
+  assert.equal(result, ["<%", "const a = 1;", "const b = 2;", "const c = 3;", "%>", ""].join("\n"));
 });
 
 test("keeps multiline execution arrays aligned without wrapper indentation drift", async () => {
@@ -149,22 +143,13 @@ test("keeps multiline execution arrays aligned without wrapper indentation drift
 });
 
 test("dedents multiline expression fragments after formatting", async () => {
-  const result = await formatEta(
-    "<%= it.user.profile.name.toUpperCase().trim().replace('_', ' ') %>",
-    { printWidth: 40 }
-  );
+  const result = await formatEta("<%= it.user.profile.name.toUpperCase().trim().replace('_', ' ') %>", {
+    printWidth: 40
+  });
 
   assert.equal(
     result,
-    [
-      "<%=",
-      "it.user.profile.name",
-      "  .toUpperCase()",
-      "  .trim()",
-      '  .replace("_", " ")',
-      "%>",
-      ""
-    ].join("\n")
+    ["<%=", "it.user.profile.name", "  .toUpperCase()", "  .trim()", '  .replace("_", " ")', "%>", ""].join("\n")
   );
 });
 
@@ -269,7 +254,7 @@ test("preserves markdown tables and fenced code blocks in markdown eta templates
       "| Category | Variables | Description |",
       "|----------|-----------|-------------|",
       "<% for (const [category, vars] of Object.entries(it.categories)) { -%>",
-      "| <%= category %> | <%= vars.length %> | <%= it.categoryDescriptions[category] || \"Configuration settings\" %> |",
+      '| <%= category %> | <%= vars.length %> | <%= it.categoryDescriptions[category] || "Configuration settings" %> |',
       "<% } -%>",
       "",
       "```bash",
@@ -373,12 +358,7 @@ test("keeps standalone raw output tags inline when the source expression was inl
 
   assert.equal(
     result,
-    [
-      "<table>",
-      '  <%~ include("/partials/_thead", { cols: it.tables.history.columns }) %>',
-      "</table>",
-      ""
-    ].join("\n")
+    ["<table>", '  <%~ include("/partials/_thead", { cols: it.tables.history.columns }) %>', "</table>", ""].join("\n")
   );
 });
 
@@ -433,14 +413,9 @@ test("does not split eta tags in html attributes at percent-close inside string 
 });
 
 test("does not treat markdown lines with logical-or operators as table rows", async () => {
-  const source = [
-    "# Notes",
-    "",
-    "<% const value = left || right %>",
-    "| --- | --- |",
-    "| key | value |",
-    ""
-  ].join("\n");
+  const source = ["# Notes", "", "<% const value = left || right %>", "| --- | --- |", "| key | value |", ""].join(
+    "\n"
+  );
 
   const result = await formatEta(source, {
     filepath: "/tmp/notes.md.eta",
@@ -450,14 +425,7 @@ test("does not treat markdown lines with logical-or operators as table rows", as
 
   assert.equal(
     result,
-    [
-      "# Notes",
-      "",
-      "<% const value = left || right; %>",
-      "| --- | --- |",
-      "| key | value |",
-      ""
-    ].join("\n")
+    ["# Notes", "", "<% const value = left || right; %>", "| --- | --- |", "| key | value |", ""].join("\n")
   );
 });
 
@@ -467,6 +435,44 @@ test("preserves whitespace inside literals when formatting inline expressions", 
   });
 
   assert.equal(result, '"a  b" || /x  y/.source || `c  d`');
+});
+
+test("respects trailingComma none for multi-line include expressions", async () => {
+  const source = [
+    "<%~",
+    '  include("/partials/_import-history-table", {',
+    "    ...it,",
+    '    tableId: "ems-history-table",',
+    '    bodyId: "ems-modal-history-body",',
+    '    extraClass: ""',
+    "  })",
+    "%>"
+  ].join("\n");
+
+  const resultNone = await formatEta(source, { trailingComma: "none" });
+  assert.ok(!resultNone.includes('extraClass: "",'), "trailingComma none should not add trailing comma");
+
+  const resultAll = await formatEta(source, { trailingComma: "all" });
+  assert.ok(resultAll.includes('extraClass: "",'), "trailingComma all should add trailing comma");
+});
+
+test("forwards htmlWhitespaceSensitivity ignore to suppress inline hug patterns", async () => {
+  // The plugin itself does not set a default for htmlWhitespaceSensitivity —
+  // the extension defaults to "ignore". Without the option, Prettier uses its
+  // own default ("css"), which produces the hug pattern tested in the first
+  // assertion below.
+  const source = [
+    '<template x-if="triggering">',
+    '  <span><i class="fa fa-spinner"></i> <span x-text="$t(\'ems.import_modal.triggering\')"></span></span>',
+    "</template>"
+  ].join("\n");
+
+  const resultCss = await formatEta(source, { printWidth: 80, htmlWhitespaceSensitivity: "css" });
+  assert.ok(resultCss.includes("><i"), "css mode should produce hug pattern for inline elements");
+
+  const resultIgnore = await formatEta(source, { printWidth: 80, htmlWhitespaceSensitivity: "ignore" });
+  assert.ok(!resultIgnore.includes("><i"), "ignore mode should eliminate hug pattern");
+  assert.ok(resultIgnore.includes('<i class="fa fa-spinner"></i>'), "ignore mode should keep inline content intact");
 });
 
 test("rejects malformed eta tags", async () => {

@@ -46,7 +46,7 @@ function isDigit(character: string): boolean {
   return /[0-9]/.test(character);
 }
 
-function scanStringLiteral(source: string, index: number, quote: "'" | "\""): number {
+function scanStringLiteral(source: string, index: number, quote: "'" | '"'): number {
   let cursor = index + 1;
 
   while (cursor < source.length) {
@@ -207,7 +207,7 @@ function scanJavaScript(
     }
 
     const current = source.charAt(cursor);
-    if (current === "'" || current === "\"") {
+    if (current === "'" || current === '"') {
       cursor = scanStringLiteral(source, cursor, current);
       lastTokenCanEndExpression = true;
       continue;

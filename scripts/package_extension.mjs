@@ -5,12 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const VSCE_BIN = path.join(
-  ROOT,
-  "node_modules",
-  ".bin",
-  process.platform === "win32" ? "vsce.cmd" : "vsce"
-);
+const VSCE_BIN = path.join(ROOT, "node_modules", ".bin", process.platform === "win32" ? "vsce.cmd" : "vsce");
 
 const PACKAGE_CONTENTS = [
   "dist",
@@ -81,14 +76,10 @@ async function main() {
     const manifest = await writeExtensionManifest(stageDir);
     await stagePackageContents(stageDir);
 
-    execFileSync(
-      VSCE_BIN,
-      ["package", "--out", path.join(ROOT, `eta-template-language-${manifest.version}.vsix`)],
-      {
-        cwd: stageDir,
-        stdio: "inherit"
-      }
-    );
+    execFileSync(VSCE_BIN, ["package", "--out", path.join(ROOT, `eta-template-language-${manifest.version}.vsix`)], {
+      cwd: stageDir,
+      stdio: "inherit"
+    });
   } finally {
     await fs.rm(stageDir, { recursive: true, force: true });
   }

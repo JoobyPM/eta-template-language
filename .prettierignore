@@ -1,0 +1,6 @@
+dist/
+packages/*/dist/
+node_modules/
+*.vsix
+*.tgz
+syntaxes/

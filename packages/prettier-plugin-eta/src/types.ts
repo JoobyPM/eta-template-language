@@ -39,11 +39,7 @@ export interface CommentTagNode extends TagNodeBase {
   type: "CommentTagNode";
 }
 
-export type TagNode =
-  | ExecTagNode
-  | EscapedOutputTagNode
-  | RawOutputTagNode
-  | CommentTagNode;
+export type TagNode = ExecTagNode | EscapedOutputTagNode | RawOutputTagNode | CommentTagNode;
 
 export type TemplateNode = TextNode | TagNode;
 
@@ -55,6 +51,7 @@ export interface EtaPluginOptions {
   semi?: boolean;
   trailingComma?: "all" | "es5" | "none";
   proseWrap?: "always" | "never" | "preserve";
+  htmlWhitespaceSensitivity?: "css" | "strict" | "ignore";
   filepath?: string;
   etaFormatHtml?: boolean;
 }
