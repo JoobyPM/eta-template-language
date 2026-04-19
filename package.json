@@ -106,21 +106,33 @@
         "etaFormatter.trailingComma": {
           "type": "string",
           "default": "all",
-          "enum": ["all", "es5", "none"],
+          "enum": [
+            "all",
+            "es5",
+            "none"
+          ],
           "scope": "resource",
           "markdownDescription": "Control trailing commas when Prettier formats JavaScript inside Eta tags. Prettier 3 defaults to `all`; set to `none` to suppress."
         },
         "etaFormatter.proseWrap": {
           "type": "string",
           "default": "preserve",
-          "enum": ["always", "never", "preserve"],
+          "enum": [
+            "always",
+            "never",
+            "preserve"
+          ],
           "scope": "resource",
           "markdownDescription": "How Prettier wraps prose in Markdown Eta templates (`.md.eta`). `preserve` (default) keeps line breaks as authored; `always` wraps at `printWidth`; `never` unwraps."
         },
         "etaFormatter.htmlWhitespaceSensitivity": {
           "type": "string",
           "default": "ignore",
-          "enum": ["css", "strict", "ignore"],
+          "enum": [
+            "css",
+            "strict",
+            "ignore"
+          ],
           "scope": "resource",
           "markdownDescription": "How Prettier handles whitespace around inline HTML elements in Eta templates. `ignore` (default) formats all elements as block-level, producing clean output; `css` respects CSS display semantics and may produce `><span` hug patterns for inline elements."
         }
@@ -128,6 +140,7 @@
     }
   },
   "scripts": {
+    "fmt": "prettier --write .",
     "build": "npm run build --workspace prettier-plugin-eta && npm run build:extension",
     "build:extension": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && esbuild src/extension.ts --bundle --platform=node --format=cjs --target=node18 --external:vscode --external:prettier --outfile=dist/extension.js",
     "package:vsix": "npm run build && node scripts/package_extension.mjs && node --test tests/vsix-package.test.mjs",

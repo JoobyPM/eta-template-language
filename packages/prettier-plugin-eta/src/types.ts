@@ -39,11 +39,7 @@ export interface CommentTagNode extends TagNodeBase {
   type: "CommentTagNode";
 }
 
-export type TagNode =
-  | ExecTagNode
-  | EscapedOutputTagNode
-  | RawOutputTagNode
-  | CommentTagNode;
+export type TagNode = ExecTagNode | EscapedOutputTagNode | RawOutputTagNode | CommentTagNode;
 
 export type TemplateNode = TextNode | TagNode;
 

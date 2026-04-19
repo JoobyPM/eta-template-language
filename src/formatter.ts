@@ -61,8 +61,7 @@ export async function provideEtaFormattingEdits(
   options: vscode.FormattingOptions
 ): Promise<vscode.TextEdit[]> {
   try {
-    const resolvedConfig =
-      document.uri.scheme === "file" ? await resolveEtaPrettierConfig(document.uri.fsPath) : {};
+    const resolvedConfig = document.uri.scheme === "file" ? await resolveEtaPrettierConfig(document.uri.fsPath) : {};
     const formatterConfig = vscode.workspace.getConfiguration("etaFormatter", document.uri);
 
     const formatted = await formatEtaDocument(document.getText(), {

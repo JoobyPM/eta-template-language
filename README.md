@@ -23,15 +23,15 @@ Install the extension from Open VSX (Cursor) or by picking **Extensions: Install
 
 All settings are resource-scoped; the precedence is **workspace setting → `.prettierrc` → extension default**.
 
-| Setting | Default | Notes |
-| --- | --- | --- |
-| `etaFormatter.formatHtml` | `true` | Format HTML regions around Eta tags. |
-| `etaFormatter.printWidth` | `80` | Preferred maximum line width. |
-| `etaFormatter.singleQuote` | `false` | Use single quotes in embedded JavaScript. |
-| `etaFormatter.semi` | `true` | Print semicolons in embedded JavaScript. |
-| `etaFormatter.trailingComma` | `"all"` | `all` / `es5` / `none`. |
-| `etaFormatter.proseWrap` | `"preserve"` | Markdown prose wrap for `.md.eta`. |
-| `etaFormatter.htmlWhitespaceSensitivity` | `"ignore"` | `ignore` avoids inline `><span` hug patterns; `css` matches Prettier's HTML default. |
+| Setting                                  | Default      | Notes                                                                                |
+| ---------------------------------------- | ------------ | ------------------------------------------------------------------------------------ |
+| `etaFormatter.formatHtml`                | `true`       | Format HTML regions around Eta tags.                                                 |
+| `etaFormatter.printWidth`                | `80`         | Preferred maximum line width.                                                        |
+| `etaFormatter.singleQuote`               | `false`      | Use single quotes in embedded JavaScript.                                            |
+| `etaFormatter.semi`                      | `true`       | Print semicolons in embedded JavaScript.                                             |
+| `etaFormatter.trailingComma`             | `"all"`      | `all` / `es5` / `none`.                                                              |
+| `etaFormatter.proseWrap`                 | `"preserve"` | Markdown prose wrap for `.md.eta`.                                                   |
+| `etaFormatter.htmlWhitespaceSensitivity` | `"ignore"`   | `ignore` avoids inline `><span` hug patterns; `css` matches Prettier's HTML default. |
 
 The packaged VSIX bundles the extension runtime and a pruned `prettier` so the formatter never depends on dynamic module resolution.
 

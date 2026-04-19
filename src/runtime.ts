@@ -17,10 +17,7 @@ export async function resolveEtaPrettierConfig(filepath: string | undefined): Pr
   }
 }
 
-export async function formatEtaDocument(
-  source: string,
-  options: EtaFormatterConfig
-): Promise<string> {
+export async function formatEtaDocument(source: string, options: EtaFormatterConfig): Promise<string> {
   return prettier.format(source, {
     ...options,
     parser: "eta-template",

@@ -87,7 +87,7 @@ test("handles Eta tags inside HTML attribute values", () => {
 });
 
 test("handles percent-close inside a quoted Eta string inside an attribute", () => {
-  const source = '<div data-x="<% const marker = \'%>\'; %>">x</div>';
+  const source = "<div data-x=\"<% const marker = '%>'; %>\">x</div>";
   const cursor = source.indexOf("div") + 1;
   const match = findMatchingHtmlTag(source, cursor);
   assert.ok(match);
@@ -128,7 +128,7 @@ test("matches custom-element tag names containing dashes", () => {
 });
 
 test("matches tag names containing colons", () => {
-  const source = "<svg:use href=\"#foo\"></svg:use>";
+  const source = '<svg:use href="#foo"></svg:use>';
   const cursor = source.indexOf("svg:use") + 1;
   const match = findMatchingHtmlTag(source, cursor);
   assert.ok(match);

@@ -9,15 +9,12 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.languages.registerDocumentFormattingEditProvider(
       { language: "eta" },
       {
-        provideDocumentFormattingEdits: provideEtaFormattingEdits,
-      },
-    ),
+        provideDocumentFormattingEdits: provideEtaFormattingEdits
+      }
+    )
   );
   context.subscriptions.push(
-    vscode.languages.registerDocumentHighlightProvider(
-      { language: "eta" },
-      etaDocumentHighlightProvider,
-    ),
+    vscode.languages.registerDocumentHighlightProvider({ language: "eta" }, etaDocumentHighlightProvider)
   );
 }
 

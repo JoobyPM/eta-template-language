@@ -157,13 +157,7 @@ function tokenizeHtmlTags(source: string): TagToken[] {
     }
     const isSelfClose = !isClose && source[checkSelfClose] === "/";
 
-    const kind: TagKind = isClose
-      ? "close"
-      : isSelfClose
-        ? "selfClose"
-        : VOID_ELEMENTS.has(name)
-          ? "void"
-          : "open";
+    const kind: TagKind = isClose ? "close" : isSelfClose ? "selfClose" : VOID_ELEMENTS.has(name) ? "void" : "open";
 
     tokens.push({ kind, name, nameStart, nameEnd });
     cursor = tagEnd;

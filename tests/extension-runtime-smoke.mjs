@@ -244,17 +244,10 @@ module.exports = {
     assert.match(formattedHug, /<i class="fa fa-spinner"><\/i>/, "inline content should remain intact");
 
     const singleLineSource = "<div><span>x</span></div>";
-    assertHighlightCase(
-      highlightProvider,
-      vscode,
-      tempDir,
-      singleLineSource,
-      singleLineSource.indexOf("div") + 1,
-      [
-        [singleLineSource.indexOf("div"), singleLineSource.indexOf("div") + 3],
-        [singleLineSource.lastIndexOf("div"), singleLineSource.lastIndexOf("div") + 3]
-      ]
-    );
+    assertHighlightCase(highlightProvider, vscode, tempDir, singleLineSource, singleLineSource.indexOf("div") + 1, [
+      [singleLineSource.indexOf("div"), singleLineSource.indexOf("div") + 3],
+      [singleLineSource.lastIndexOf("div"), singleLineSource.lastIndexOf("div") + 3]
+    ]);
 
     const multiLineSource = [
       "<section>",
@@ -266,17 +259,10 @@ module.exports = {
       "</section>",
       ""
     ].join("\n");
-    assertHighlightCase(
-      highlightProvider,
-      vscode,
-      tempDir,
-      multiLineSource,
-      multiLineSource.indexOf("section") + 1,
-      [
-        [multiLineSource.indexOf("section"), multiLineSource.indexOf("section") + 7],
-        [multiLineSource.lastIndexOf("section"), multiLineSource.lastIndexOf("section") + 7]
-      ]
-    );
+    assertHighlightCase(highlightProvider, vscode, tempDir, multiLineSource, multiLineSource.indexOf("section") + 1, [
+      [multiLineSource.indexOf("section"), multiLineSource.indexOf("section") + 7],
+      [multiLineSource.lastIndexOf("section"), multiLineSource.lastIndexOf("section") + 7]
+    ]);
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });
   }
