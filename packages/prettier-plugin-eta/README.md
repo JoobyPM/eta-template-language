@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/JoobyPM/eta-template-language/main/images/icon.png" width="144" alt="prettier-plugin-eta logo">
+</p>
+
 # prettier-plugin-eta
 
 Prettier plugin for [Eta](https://eta.js.org/) templates.
