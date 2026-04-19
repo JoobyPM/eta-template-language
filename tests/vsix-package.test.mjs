@@ -133,7 +133,7 @@ test("packaged VSIX contains the bundled extension runtime", async (t) => {
   assert.match(bundle, /\brequire\((["'])prettier\1\)/);
 });
 
-test("packaged VSIX bundle can load and format an Eta document", async (t) => {
+test("packaged VSIX bundle registers formatter and highlight providers", async (t) => {
   if (!ensureUnzipAvailable(t)) {
     return;
   }

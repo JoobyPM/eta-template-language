@@ -1,6 +1,6 @@
 {
   "name": "prettier-plugin-eta",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "Prettier plugin for Eta templates.",
   "license": "MIT",
   "type": "module",
@@ -27,6 +27,10 @@
     ".": {
       "import": "./dist/src/index.js",
       "types": "./dist/src/index.d.ts"
+    },
+    "./html-tag-matcher": {
+      "import": "./dist/src/html-tag-matcher.js",
+      "types": "./dist/src/html-tag-matcher.d.ts"
     }
   },
   "files": [
@@ -37,7 +41,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test dist/test/plugin.test.js"
+    "test": "npm run build && node --test dist/test/*.test.js"
   },
   "peerDependencies": {
     "prettier": "^3.0.0"
