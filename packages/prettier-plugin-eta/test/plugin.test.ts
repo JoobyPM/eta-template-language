@@ -469,6 +469,44 @@ test("preserves whitespace inside literals when formatting inline expressions", 
   assert.equal(result, '"a  b" || /x  y/.source || `c  d`');
 });
 
+test("respects trailingComma none for multi-line include expressions", async () => {
+  const source = [
+    "<%~",
+    '  include("/partials/_import-history-table", {',
+    "    ...it,",
+    '    tableId: "ems-history-table",',
+    '    bodyId: "ems-modal-history-body",',
+    '    extraClass: ""',
+    "  })",
+    "%>"
+  ].join("\n");
+
+  const resultNone = await formatEta(source, { trailingComma: "none" });
+  assert.ok(!resultNone.includes('extraClass: "",'), "trailingComma none should not add trailing comma");
+
+  const resultAll = await formatEta(source, { trailingComma: "all" });
+  assert.ok(resultAll.includes('extraClass: "",'), "trailingComma all should add trailing comma");
+});
+
+test("forwards htmlWhitespaceSensitivity ignore to suppress inline hug patterns", async () => {
+  // The plugin itself does not set a default for htmlWhitespaceSensitivity —
+  // the extension defaults to "ignore". Without the option, Prettier uses its
+  // own default ("css"), which produces the hug pattern tested in the first
+  // assertion below.
+  const source = [
+    "<template x-if=\"triggering\">",
+    "  <span><i class=\"fa fa-spinner\"></i> <span x-text=\"$t('ems.import_modal.triggering')\"></span></span>",
+    "</template>"
+  ].join("\n");
+
+  const resultCss = await formatEta(source, { printWidth: 80, htmlWhitespaceSensitivity: "css" });
+  assert.ok(resultCss.includes("><i"), "css mode should produce hug pattern for inline elements");
+
+  const resultIgnore = await formatEta(source, { printWidth: 80, htmlWhitespaceSensitivity: "ignore" });
+  assert.ok(!resultIgnore.includes("><i"), "ignore mode should eliminate hug pattern");
+  assert.ok(resultIgnore.includes("<i class=\"fa fa-spinner\"></i>"), "ignore mode should keep inline content intact");
+});
+
 test("rejects malformed eta tags", async () => {
   await assert.rejects(() => formatEta("<% if (enabled) { "), /Unterminated Eta tag/);
 });

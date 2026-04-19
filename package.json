@@ -2,7 +2,7 @@
   "name": "eta-template-language",
   "displayName": "Eta Template Language",
   "description": "Eta syntax highlighting and Prettier-backed formatting for Cursor and VS Code-compatible editors.",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "publisher": "JoobyPM",
   "icon": "images/icon.png",
   "license": "MIT",
@@ -102,6 +102,27 @@
           "default": true,
           "scope": "resource",
           "markdownDescription": "Print semicolons when Prettier formats JavaScript inside Eta tags."
+        },
+        "etaFormatter.trailingComma": {
+          "type": "string",
+          "default": "all",
+          "enum": ["all", "es5", "none"],
+          "scope": "resource",
+          "markdownDescription": "Control trailing commas when Prettier formats JavaScript inside Eta tags. Prettier 3 defaults to `all`; set to `none` to suppress."
+        },
+        "etaFormatter.proseWrap": {
+          "type": "string",
+          "default": "preserve",
+          "enum": ["always", "never", "preserve"],
+          "scope": "resource",
+          "markdownDescription": "How Prettier wraps prose in Markdown Eta templates (`.md.eta`). `preserve` (default) keeps line breaks as authored; `always` wraps at `printWidth`; `never` unwraps."
+        },
+        "etaFormatter.htmlWhitespaceSensitivity": {
+          "type": "string",
+          "default": "ignore",
+          "enum": ["css", "strict", "ignore"],
+          "scope": "resource",
+          "markdownDescription": "How Prettier handles whitespace around inline HTML elements in Eta templates. `ignore` (default) formats all elements as block-level, producing clean output; `css` respects CSS display semantics and may produce `><span` hug patterns for inline elements."
         }
       }
     }
@@ -112,7 +133,7 @@
     "package:vsix": "npm run build && node scripts/package_extension.mjs && node --test tests/vsix-package.test.mjs",
     "package": "npm run build && npm run test && node scripts/package_extension.mjs && node --test tests/vsix-package.test.mjs",
     "test": "npm run typecheck && npm run test:syntax && npm run test:plugin && npm run test:extension",
-    "test:extension": "npm run build:extension && node --test tests/extension-bundle.test.mjs",
+    "test:extension": "npm run build:extension && node --test tests/extension-bundle.test.mjs tests/formatter-defaults.test.mjs",
     "test:plugin": "npm run test --workspace prettier-plugin-eta",
     "test:syntax": "python3 scripts/generate_grammars.py && python3 tests/test_generated_grammars.py && python3 tests/test_syntax_patterns.py && node --test tests/textmate-tokenization.test.mjs",
     "typecheck": "tsc -p tsconfig.json && tsc --noEmit -p packages/prettier-plugin-eta/tsconfig.json"

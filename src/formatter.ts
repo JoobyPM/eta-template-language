@@ -6,25 +6,6 @@ export const etaFormatterOutputChannel = vscode.window.createOutputChannel("Eta 
 
 let lastShownErrorMessage: string | undefined;
 
-function pickBool(config: EtaFormatterConfig, key: string): boolean | undefined {
-  const value = (config as Record<string, unknown>)[key];
-  return typeof value === "boolean" ? value : undefined;
-}
-
-function pickEnum<const Values extends readonly string[]>(
-  config: EtaFormatterConfig,
-  key: string,
-  allowedValues: Values
-): Values[number] | undefined {
-  const value = (config as Record<string, unknown>)[key];
-  return typeof value === "string" && allowedValues.includes(value) ? (value as Values[number]) : undefined;
-}
-
-function pickNumber(config: EtaFormatterConfig, key: string): number | undefined {
-  const value = (config as Record<string, unknown>)[key];
-  return typeof value === "number" ? value : undefined;
-}
-
 function fullDocumentRange(document: vscode.TextDocument): vscode.Range {
   const end = document.positionAt(document.getText().length);
   return new vscode.Range(new vscode.Position(0, 0), end);
@@ -32,6 +13,47 @@ function fullDocumentRange(document: vscode.TextDocument): vscode.Range {
 
 function clampTabWidth(tabSize: number): number {
   return Math.max(1, Math.trunc(tabSize));
+}
+
+function readPrettierValue(resolvedConfig: EtaFormatterConfig, key: string): unknown {
+  return (resolvedConfig as Record<string, unknown>)[key];
+}
+
+interface PickedOption<T> {
+  formatterConfig: vscode.WorkspaceConfiguration;
+  resolvedConfig: EtaFormatterConfig;
+  settingKey: string;
+  prettierKey?: string;
+  fallback: T;
+}
+
+function pickValidatedBool(options: PickedOption<boolean>): boolean {
+  const { formatterConfig, resolvedConfig, settingKey, prettierKey = settingKey, fallback } = options;
+  const prettierValue = readPrettierValue(resolvedConfig, prettierKey);
+  const seed = typeof prettierValue === "boolean" ? prettierValue : fallback;
+  const raw = formatterConfig.get<boolean>(settingKey, seed);
+  return typeof raw === "boolean" ? raw : fallback;
+}
+
+function pickValidatedNumber(options: PickedOption<number>): number {
+  const { formatterConfig, resolvedConfig, settingKey, prettierKey = settingKey, fallback } = options;
+  const prettierValue = readPrettierValue(resolvedConfig, prettierKey);
+  const seed = typeof prettierValue === "number" && Number.isFinite(prettierValue) ? prettierValue : fallback;
+  const raw = formatterConfig.get<number>(settingKey, seed);
+  return typeof raw === "number" && Number.isFinite(raw) ? raw : fallback;
+}
+
+function pickValidatedEnum<const Values extends readonly string[]>(
+  options: PickedOption<Values[number]> & { allowedValues: Values }
+): Values[number] {
+  const { formatterConfig, resolvedConfig, settingKey, prettierKey = settingKey, allowedValues, fallback } = options;
+  const prettierValue = readPrettierValue(resolvedConfig, prettierKey);
+  const seed =
+    typeof prettierValue === "string" && allowedValues.includes(prettierValue)
+      ? (prettierValue as Values[number])
+      : fallback;
+  const raw = formatterConfig.get<string>(settingKey, seed);
+  return typeof raw === "string" && allowedValues.includes(raw) ? (raw as Values[number]) : fallback;
 }
 
 export async function provideEtaFormattingEdits(
@@ -48,24 +70,37 @@ export async function provideEtaFormattingEdits(
       filepath: document.uri.scheme === "file" ? document.uri.fsPath : undefined,
       tabWidth: clampTabWidth(Number.isFinite(options.tabSize) ? options.tabSize : 2),
       useTabs: !options.insertSpaces,
-      printWidth: formatterConfig.get<number>(
-        "printWidth",
-        pickNumber(resolvedConfig, "printWidth") ?? 80
-      ),
-      singleQuote: formatterConfig.get<boolean>(
-        "singleQuote",
-        pickBool(resolvedConfig, "singleQuote") ?? false
-      ),
-      semi: formatterConfig.get<boolean>(
-        "semi",
-        pickBool(resolvedConfig, "semi") ?? true
-      ),
-      trailingComma: pickEnum(resolvedConfig, "trailingComma", ["all", "es5", "none"] as const),
-      proseWrap: pickEnum(resolvedConfig, "proseWrap", ["always", "never", "preserve"] as const),
-      etaFormatHtml: formatterConfig.get<boolean>(
-        "formatHtml",
-        pickBool(resolvedConfig, "etaFormatHtml") ?? true
-      )
+      printWidth: pickValidatedNumber({ formatterConfig, resolvedConfig, settingKey: "printWidth", fallback: 80 }),
+      singleQuote: pickValidatedBool({ formatterConfig, resolvedConfig, settingKey: "singleQuote", fallback: false }),
+      semi: pickValidatedBool({ formatterConfig, resolvedConfig, settingKey: "semi", fallback: true }),
+      trailingComma: pickValidatedEnum({
+        formatterConfig,
+        resolvedConfig,
+        settingKey: "trailingComma",
+        allowedValues: ["all", "es5", "none"] as const,
+        fallback: "all"
+      }),
+      htmlWhitespaceSensitivity: pickValidatedEnum({
+        formatterConfig,
+        resolvedConfig,
+        settingKey: "htmlWhitespaceSensitivity",
+        allowedValues: ["css", "strict", "ignore"] as const,
+        fallback: "ignore"
+      }),
+      proseWrap: pickValidatedEnum({
+        formatterConfig,
+        resolvedConfig,
+        settingKey: "proseWrap",
+        allowedValues: ["always", "never", "preserve"] as const,
+        fallback: "preserve"
+      }),
+      etaFormatHtml: pickValidatedBool({
+        formatterConfig,
+        resolvedConfig,
+        settingKey: "formatHtml",
+        prettierKey: "etaFormatHtml",
+        fallback: true
+      })
     });
 
     if (formatted === document.getText()) {

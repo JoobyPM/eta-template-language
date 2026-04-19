@@ -55,6 +55,7 @@ export interface EtaPluginOptions {
   semi?: boolean;
   trailingComma?: "all" | "es5" | "none";
   proseWrap?: "always" | "never" | "preserve";
+  htmlWhitespaceSensitivity?: "css" | "strict" | "ignore";
   filepath?: string;
   etaFormatHtml?: boolean;
 }
