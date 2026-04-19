@@ -14,6 +14,7 @@ const VSCE_BIN = path.join(
 
 const PACKAGE_CONTENTS = [
   "dist",
+  "images/icon.png",
   "language-configuration.json",
   "snippets",
   "syntaxes",

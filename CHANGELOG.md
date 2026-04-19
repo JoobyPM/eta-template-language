@@ -7,6 +7,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.10] - 2026-04-19
+
+### Added
+
+- Added a shared Eta logo asset and extension icon, and surfaced the same branding in the extension and `prettier-plugin-eta` package documentation.
+
 ## [0.2.9] - 2026-04-19
 
 ### Changed

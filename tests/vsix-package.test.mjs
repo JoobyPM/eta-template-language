@@ -37,6 +37,8 @@ test("packaged VSIX contains the bundled extension runtime", async (t) => {
     .filter(Boolean);
 
   assert.ok(entries.includes("extension/dist/extension.js"), "VSIX should package extension/dist/extension.js");
+  assert.ok(entries.includes("extension/images/icon.png"), "VSIX should package the extension icon asset");
+  assert.ok(!entries.includes("extension/images/logo.svg"), "VSIX should not package non-runtime logo source assets");
   assert.ok(
     entries.includes("extension/node_modules/prettier/package.json"),
     "VSIX should package the explicit prettier runtime dependency"
@@ -103,6 +105,7 @@ test("packaged VSIX contains the bundled extension runtime", async (t) => {
   assert.equal(packagedManifest.workspaces, undefined, "VSIX manifest should not expose workspace metadata");
   assert.equal(packagedManifest.publisher, manifest.publisher, "VSIX manifest should preserve the real publisher id");
   assert.notEqual(packagedManifest.publisher, "local-dev", "VSIX manifest should not ship a placeholder publisher");
+  assert.equal(packagedManifest.icon, "images/icon.png", "VSIX manifest should preserve the extension icon path");
   for (const grammar of packagedManifest.contributes.grammars ?? []) {
     assert.equal(grammar.embeddedLanguages, undefined, "VSIX grammars should not opt into embedded language semantic highlighting");
   }

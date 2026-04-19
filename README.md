@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/JoobyPM/eta-template-language/main/images/icon.png" width="160" alt="Eta Template Language logo">
+</p>
+
 # Eta Template Language
 
 Eta language support plus a dedicated Prettier formatter for Cursor and VS Code-compatible editors.
