@@ -12,9 +12,7 @@ Prettier plugin for [Eta](https://eta.js.org/) templates.
 npm install --save-dev prettier prettier-plugin-eta
 ```
 
-## Usage
-
-Create a `.prettierrc` file:
+## Use
 
 ```json
 {
@@ -22,20 +20,37 @@ Create a `.prettierrc` file:
 }
 ```
 
-Then format Eta files with Prettier:
-
 ```bash
 npx prettier --write "views/**/*.eta"
 ```
 
-## Status
+## Scope
 
-Current scope is safe full-document formatting for Eta templates:
+Safe full-document formatting for Eta templates:
 
-- formats JavaScript inside Eta execution and output tags
-- formats surrounding HTML through Prettier's HTML parser
-- preserves Eta trim markers
-- handles `%>` inside JavaScript strings and template literals
-- honors standard Prettier options such as `printWidth`, `tabWidth`, `useTabs`, `singleQuote`, `semi`, `trailingComma`, and `proseWrap`
+- formats JavaScript inside execution and output tags with `babel-ts`;
+- formats surrounding HTML through Prettier's HTML parser;
+- preserves Eta trim markers, `%>` inside JavaScript strings, and template-literal content;
+- honors standard Prettier options (`printWidth`, `tabWidth`, `useTabs`, `singleQuote`, `semi`, `trailingComma`, `proseWrap`, `htmlWhitespaceSensitivity`).
 
-Range formatting is intentionally out of scope for the plugin package.
+Range formatting is intentionally out of scope.
+
+## Secondary export: `prettier-plugin-eta/html-tag-matcher`
+
+For editor tooling that needs to find matching HTML tag pairs in Eta templates (e.g. VS Code document-highlight providers), the plugin exposes its Eta-aware matcher as a separate entry point:
+
+```ts
+import { findMatchingHtmlTag } from "prettier-plugin-eta/html-tag-matcher";
+
+const match = findMatchingHtmlTag(source, cursorOffset);
+if (match?.mate) {
+  // match.primary and match.mate are { start, end } offsets into `source`.
+}
+```
+
+The matcher skips `<% … %>` regions using the plugin's lexer so tags inside Eta control blocks stay balanced.
+
+## Links
+
+- Repository and issues: <https://github.com/JoobyPM/eta-template-language>
+- Release notes: <https://github.com/JoobyPM/eta-template-language/blob/main/CHANGELOG.md>
